@@ -5,3 +5,4 @@
 /duckdb/
 **.db
 **.csv
+.env
