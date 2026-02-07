@@ -5,6 +5,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
 	"math/rand"
+	"net"
 	"networktrafficart/networktrafficart/capture"
 	"networktrafficart/networktrafficart/universe/particle"
 	"networktrafficart/networktrafficart/util"
@@ -75,7 +76,7 @@ func (u *Universe) CreateParticle(pe capture.PacketEvent, screenWidth, screenHei
 	return p
 }
 
-func ipv4ToRGBA(src []byte) color.RGBA {
+func ipv4ToRGBA(src net.IP) color.RGBA {
 	r := src[0]
 	g := src[1]
 	b := src[2]

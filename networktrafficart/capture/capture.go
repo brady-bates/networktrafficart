@@ -5,9 +5,9 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
-	"math/rand"
 	"net"
 	"networktrafficart/networktrafficart/dotenv"
+	"networktrafficart/networktrafficart/util"
 	"time"
 )
 
@@ -89,8 +89,8 @@ func (c *CaptureProvider) MockPacketEventStream() {
 		for batch := 0; batch < env.MockPacketEventBatchSize; batch++ {
 			event := PacketEvent{
 				Size:  500,
-				SrcIP: generateRandomIPv4(),
-				DstIP: generateRandomIPv4(),
+				SrcIP: util.GenerateRandomIPv4(),
+				DstIP: util.GenerateRandomIPv4(),
 			}
 			events = append(events, event)
 		}
@@ -104,15 +104,6 @@ func (c *CaptureProvider) MockPacketEventStream() {
 
 		time.Sleep(micro)
 	}
-}
-
-func generateRandomIPv4() net.IP {
-	o1 := byte(rand.Intn(256))
-	o2 := byte(rand.Intn(256))
-	o3 := byte(rand.Intn(256))
-	o4 := byte(rand.Intn(256))
-
-	return net.IPv4(o1, o2, o3, o4).To4()
 }
 
 func getNetInterfaceIPv4(deviceName string) (net.IP, error) {

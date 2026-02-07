@@ -3,6 +3,8 @@ package util
 import (
 	"log"
 	"math"
+	"math/rand"
+	"net"
 	"strconv"
 )
 
@@ -20,4 +22,13 @@ func ParseToInt(s string) int {
 		log.Fatal(err)
 	}
 	return i
+}
+
+func GenerateRandomIPv4() net.IP {
+	o1 := byte(rand.Intn(256))
+	o2 := byte(rand.Intn(256))
+	o3 := byte(rand.Intn(256))
+	o4 := byte(rand.Intn(256))
+
+	return net.IPv4(o1, o2, o3, o4).To4()
 }
