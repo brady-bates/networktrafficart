@@ -66,7 +66,7 @@ func (d *Display) WatchPacketEventChannel() {
 	}{capacity, curve, minDelay, maxDelay}
 	fmt.Printf("WatchPacketEventChannel init values: %+v\n", vals)
 
-	for packet := range d.PacketEventIn {
+	for packetEvent := range d.PacketEventIn {
 		dlen := float64(len(d.PacketEventIn))
 
 		fullness := dlen / capacity
@@ -75,10 +75,11 @@ func (d *Display) WatchPacketEventChannel() {
 		modulatedDelay := maxDelay + mod*(minDelay-maxDelay)
 		micro := time.Duration(modulatedDelay) * time.Microsecond
 
-		p := d.Universe.CreateParticle(packet, d.screenWidth, d.screenHeight)
+		p := d.Universe.CreateParticle(packetEvent, d.screenWidth, d.screenHeight)
 		d.Universe.AddToParticles(p)
 
-		//fmt.Printf("Len: %d mDelay: %f\n", len(d.PacketEventIn), modulatedDelay)
+		//fmt.Printf("PacketEvent: %+v\n", packetEvent)
+		//fmt.Printf("Particle: %+v\n", p)
 		time.Sleep(micro)
 	}
 }
