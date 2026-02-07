@@ -9,6 +9,7 @@ import (
 	"networktrafficart/networktrafficart/capture"
 	"networktrafficart/networktrafficart/dotenv"
 	"networktrafficart/networktrafficart/universe"
+	"networktrafficart/networktrafficart/util"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type Display struct {
 }
 
 func NewDisplay(pe chan capture.PacketEvent, u *universe.Universe) *Display {
+	env := dotenv.GetDotenv()
 	circleImage = ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
 	d := &Display{
@@ -30,7 +32,7 @@ func NewDisplay(pe chan capture.PacketEvent, u *universe.Universe) *Display {
 		screenWidth:   800,
 		screenHeight:  600,
 	}
-	go d.WatchPacketEventChannel()
+	go d.WatchPacketEventChannel(env.PacketEventWatcherAggressionCurve, env.PacketEventWatcherMaxDelayMicros)
 	return d
 }
 
@@ -51,19 +53,14 @@ func (d *Display) Layout(w, h int) (int, int) {
 
 // WatchPacketEventChannel
 // Pulls out of channel and adds to the displays universe
-func (d *Display) WatchPacketEventChannel() {
-	// <1 is a faster curve, >1 is slower
-	// Negative values cause math.Pow to return +Inf which results in a delay of 0
-	curve := 0.3
+func (d *Display) WatchPacketEventChannel(aggressionCurve float64, maxWatcherDelay int) {
+	curve := util.ClampValue(aggressionCurve, 0.0, math.Inf(+1))
 	capacity := float64(cap(d.PacketEventIn))
 
-	env := dotenv.GetDotenv()
 	minDelay := 0.0
-	maxDelay := float64(env.PacketEventWatcherMaxDelayMicros)
+	maxDelay := float64(maxWatcherDelay)
 
-	vals := struct {
-		Cap, Curve, Min, Max float64
-	}{capacity, curve, minDelay, maxDelay}
+	vals := struct{ Cap, Curve, Min, Max float64 }{capacity, curve, minDelay, maxDelay}
 	fmt.Printf("WatchPacketEventChannel init values: %+v\n", vals)
 
 	for packetEvent := range d.PacketEventIn {

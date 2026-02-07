@@ -24,6 +24,14 @@ func ParseToInt(s string) int {
 	return i
 }
 
+func ParseToFloat(s string) float64 {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return f
+}
+
 func GenerateRandomIPv4() net.IP {
 	o1 := byte(rand.Intn(256))
 	o2 := byte(rand.Intn(256))
