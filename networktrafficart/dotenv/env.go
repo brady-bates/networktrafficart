@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"log"
+	u "networktrafficart/networktrafficart/util"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 )
@@ -32,28 +32,16 @@ func GetDotenv() *Dotenv {
 			log.Fatal("Error loading .env file")
 		}
 		env = &Dotenv{
-			EnableMockPacketEventStream:      isTrueStr(os.Getenv("ENABLE_MOCK_PACKET_EVENT_STREAM")),
-			MockPacketEventStreamDelayMicros: parseToInt(os.Getenv("MOCK_PACKET_EVENT_STREAM_DELAY_MICROS")),
-			MockPacketEventBatchSize:         parseToInt(os.Getenv("MOCK_PACKET_EVENT_BATCH_SIZE")),
-			PacketEventWatcherMaxDelayMicros: parseToInt(os.Getenv("PACKET_EVENT_WATCHER_MAX_DELAY_MICROS")),
-			WritePacketsToCSV:                isTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
+			EnableMockPacketEventStream:      u.IsTrueStr(os.Getenv("ENABLE_MOCK_PACKET_EVENT_STREAM")),
+			MockPacketEventStreamDelayMicros: u.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_STREAM_DELAY_MICROS")),
+			MockPacketEventBatchSize:         u.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_BATCH_SIZE")),
+			PacketEventWatcherMaxDelayMicros: u.ParseToInt(os.Getenv("PACKET_EVENT_WATCHER_MAX_DELAY_MICROS")),
+			WritePacketsToCSV:                u.IsTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
 			CsvName:                          os.Getenv("CSV_NAME"),
-			EnableBPF:                        isTrueStr(os.Getenv("ENABLE_BPF")),
+			EnableBPF:                        u.IsTrueStr(os.Getenv("ENABLE_BPF")),
 			BPFFilter:                        strings.TrimSpace(os.Getenv("BPF_FILTER")),
 		}
 		fmt.Println("Dotenv is initialized")
 	})
 	return env
-}
-
-func isTrueStr(s string) bool {
-	return s == "true"
-}
-
-func parseToInt(s string) int {
-	i, err := strconv.Atoi(s)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return i
 }

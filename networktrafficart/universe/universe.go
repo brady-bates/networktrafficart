@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"networktrafficart/networktrafficart/capture"
 	"networktrafficart/networktrafficart/universe/particle"
+	"networktrafficart/networktrafficart/util"
 )
 
 const (
@@ -60,7 +61,7 @@ func (u *Universe) AddToParticles(p *particle.Particle) {
 func (u *Universe) CreateParticle(pe capture.PacketEvent, screenWidth, screenHeight int16) *particle.Particle {
 	ip := binary.BigEndian.Uint32(pe.SrcIP)
 	xStart := (float32(ip) / ipv4Range) * float32(screenWidth) // TODO fix for ipv6
-	xSkewIntensity := float32(.4)
+	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
 
 	p := particle.NewParticle(
 		xStart,
