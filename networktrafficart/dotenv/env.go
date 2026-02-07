@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 )
 
@@ -21,6 +22,8 @@ type Dotenv struct {
 	PacketEventWatcherMaxDelayMicros int
 	WritePacketsToCSV                bool
 	CsvName                          string
+	EnableBPF                        bool
+	BPFFilter                        string
 }
 
 func GetDotenv() *Dotenv {
@@ -35,6 +38,8 @@ func GetDotenv() *Dotenv {
 			PacketEventWatcherMaxDelayMicros: parseToInt(os.Getenv("PACKET_EVENT_WATCHER_MAX_DELAY_MICROS")),
 			WritePacketsToCSV:                isTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
 			CsvName:                          os.Getenv("CSV_NAME"),
+			EnableBPF:                        isTrueStr(os.Getenv("ENABLE_BPF")),
+			BPFFilter:                        strings.TrimSpace(os.Getenv("BPF_FILTER")),
 		}
 		fmt.Println("Dotenv is initialized")
 	})
