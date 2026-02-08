@@ -10,6 +10,7 @@ import (
 	"networktrafficart/universe"
 	"networktrafficart/universe/particle"
 	"networktrafficart/util"
+	"networktrafficart/util/shutdown"
 	"time"
 )
 
@@ -36,6 +37,13 @@ func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe, curve flo
 }
 
 func (d *Display) Update() error {
+	if ebiten.IsWindowBeingClosed() {
+		ebiten.SetWindowClosingHandled(true)
+		shutdown.GetShutDownCtx().Cancel()
+
+		return ebiten.Termination
+	}
+
 	d.Universe.Tick()
 	return nil
 }

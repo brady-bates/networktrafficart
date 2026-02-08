@@ -46,13 +46,13 @@ func NewCaptureProvider(deviceName string, enableBPF bool, bpfFilter string) (*C
 	}, nil
 }
 
-func (c *Capture) StartPacketCapture(packetChan chan<- gopacket.Packet, WritePacketsToCSV bool) {
+func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacketsToCSV bool) {
 	source := gopacket.NewPacketSource(c.handle, c.handle.LinkType())
 
 	for packet := range source.Packets() {
-		if WritePacketsToCSV && packetChan != nil {
+		if WritePacketsToCSV && packetIn != nil {
 			select {
-			case packetChan <- packet:
+			case packetIn <- packet:
 			default:
 			}
 		}

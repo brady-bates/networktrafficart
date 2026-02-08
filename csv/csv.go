@@ -6,6 +6,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"log"
+	"networktrafficart/util/shutdown"
 	"os"
 	"reflect"
 )
@@ -40,7 +41,6 @@ type PacketRecord struct {
 }
 
 func WriteCSVHeader(writer *csv.Writer) error {
-	defer writer.Flush()
 	return writer.Write(ReflectPacketRecord())
 }
 
@@ -48,25 +48,40 @@ func AppendPacketToCSV(writer *csv.Writer, packet gopacket.Packet) error {
 	return writer.Write(NewPacketRecord(packet).ToStringArray())
 }
 
-func StreamToCSV(packetChan <-chan gopacket.Packet, filename string) {
+func StreamToCSV(packetOut <-chan gopacket.Packet, filename string) {
 	_ = os.Remove(filename)
+	sd := shutdown.GetShutDownCtx()
+
 	file, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer file.Close()
 
 	writer := csv.NewWriter(file)
-	defer writer.Flush()
-
 	if err = WriteCSVHeader(writer); err != nil {
 		log.Fatal(err)
 	}
 
-	for packet := range packetChan {
-		if err = AppendPacketToCSV(writer, packet); err != nil {
-			log.Fatal(err)
+	var packet gopacket.Packet
+	for {
+		select {
+		case packet = <-packetOut:
+			if err = AppendPacketToCSV(writer, packet); err != nil {
+				log.Fatal(err)
+			}
+		case <-sd.Ctx.Done():
+			goto shutdown
 		}
+	}
+
+shutdown:
+	fmt.Println("Shutdown signal received")
+	writer.Flush()
+	if err = file.Sync(); err != nil {
+		log.Println(err)
+	}
+	if err = file.Close(); err != nil {
+		log.Println(err)
 	}
 }
 
