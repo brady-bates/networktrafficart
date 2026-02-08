@@ -3,9 +3,9 @@ package particle
 import (
 	"encoding/binary"
 	"image/color"
+	"math"
 	"math/rand"
 	"net"
-	"networktrafficart/capture"
 	"networktrafficart/capture/packetevent"
 	"networktrafficart/util"
 )
@@ -23,9 +23,10 @@ type Particle struct {
 }
 
 func CreateFromPacketEvent(pe packetevent.PacketEvent, screenWidth, screenHeight int) *Particle {
+	maxIPv4Bits := float32(math.MaxUint32)
 	ip := binary.BigEndian.Uint32(pe.SrcIP)
 	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
-	xStart := (float32(ip) / capture.IPv4Range) * float32(screenWidth) // TODO fix for ipv6
+	xStart := (float32(ip) / maxIPv4Bits) * float32(screenWidth) // TODO fix for ipv6
 
 	return &Particle{
 		xStart,
@@ -38,9 +39,9 @@ func CreateFromPacketEvent(pe packetevent.PacketEvent, screenWidth, screenHeight
 }
 
 func ipv4ToRGBA(src net.IP) color.RGBA {
-	r := src[0]
-	g := src[1]
-	b := src[2]
+	r := src[1]
+	g := src[2]
+	b := src[3]
 
 	// TODO Make sure the colors don't get mangled by this, want them to actually be representative
 	brightness := (uint32(r)*299 + uint32(g)*587 + uint32(b)*114) / 1000

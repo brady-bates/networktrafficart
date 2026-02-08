@@ -12,10 +12,6 @@ import (
 	"time"
 )
 
-const (
-	IPv4Range = 4294967295.0
-)
-
 type Capture struct {
 	handle *pcap.Handle
 	Events chan packetevent.PacketEvent
