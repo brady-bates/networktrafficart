@@ -26,7 +26,7 @@ func NewCaptureProvider(deviceName string, enableBPF bool, bpfFilter string) (*C
 		return nil, err
 	}
 
-	ipv4, err := getNetInterfaceIPv4(deviceName)
+	ipv4, err := getInterfaceIPv4(deviceName)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *Capture) MockPacketEventStream(delayMicros int, batchSize int) {
 	}
 }
 
-func getNetInterfaceIPv4(deviceName string) (net.IP, error) {
+func getInterfaceIPv4(deviceName string) (net.IP, error) {
 	devices, err := pcap.FindAllDevs()
 	if err != nil {
 		return nil, err
