@@ -23,18 +23,22 @@ type Particle struct {
 }
 
 func CreateFromPacketEvent(pe packetevent.PacketEvent, screenWidth, screenHeight int) *Particle {
+	rand0to1 := rand.Float32() - .5
 	maxIPv4Bits := float32(math.MaxUint32)
 	ip := binary.BigEndian.Uint32(pe.SrcIP)
+	size := float32(pe.Size)
+
 	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
 	xStart := (float32(ip) / maxIPv4Bits) * float32(screenWidth) // TODO fix for ipv6
+	pixelsPerTick := float32(7.0)
 
 	return &Particle{
 		xStart,
 		float32(screenHeight) + offScreenSpawnDistance,
-		5,
-		(rand.Float32() - .5) * xSkewIntensity,
+		pixelsPerTick,
+		rand0to1 * xSkewIntensity,
 		ipv4ToRGBA(pe.SrcIP),
-		float32(pe.Size) / 75,
+		size / 75,
 	}
 }
 
@@ -43,7 +47,6 @@ func ipv4ToRGBA(src net.IP) color.RGBA {
 	g := src[2]
 	b := src[3]
 
-	// TODO Make sure the colors don't get mangled by this, want them to actually be representative
 	brightness := (uint32(r)*299 + uint32(g)*587 + uint32(b)*114) / 1000
 
 	if brightness < 120 {
