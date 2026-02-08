@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"networktrafficart/capture"
+	"networktrafficart/capture/packetevent"
 	"networktrafficart/util"
 )
 
@@ -17,9 +18,9 @@ type Particle struct {
 	Size   float32
 }
 
-func CreateParticle(pe capture.PacketEvent, screenWidth, screenHeight int16, offScreenDistance float32) *Particle {
+func CreateParticle(pe packetevent.PacketEvent, screenWidth, screenHeight int16, offScreenDistance float32) *Particle {
 	ip := binary.BigEndian.Uint32(pe.SrcIP)
-	xStart := (float32(ip) / capture.Ipv4Range) * float32(screenWidth) // TODO fix for ipv6
+	xStart := (float32(ip) / capture.IPv4Range) * float32(screenWidth) // TODO fix for ipv6
 	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
 
 	p := &Particle{

@@ -133,32 +133,6 @@ func NewPacketRecord(packet gopacket.Packet) PacketRecord {
 	return r
 }
 
-func (r PacketRecord) ToArray() []any {
-	return []any{
-		r.Timestamp,
-		r.Length,
-		r.SrcMAC,
-		r.DstMAC,
-		r.EtherType,
-		r.SrcIP,
-		r.DstIP,
-		r.IPVersion,
-		r.TTL,
-		r.IPProtocol,
-		r.SrcPort,
-		r.DstPort,
-		r.Protocol,
-		r.TCPSyn,
-		r.TCPAck,
-		r.TCPFin,
-		r.TCPRst,
-		r.TCPPsh,
-		r.DNSQuery,
-		r.DNSIsResponse,
-		r.DNSResponseCode,
-	}
-}
-
 func (r PacketRecord) ToStringArray() []string {
 	return []string{
 		fmt.Sprintf("%d", r.Timestamp),

@@ -6,7 +6,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"image/color"
 	"math"
-	"networktrafficart/capture"
+	"networktrafficart/capture/packetevent"
 	"networktrafficart/config"
 	"networktrafficart/universe"
 	"networktrafficart/universe/particle"
@@ -17,13 +17,13 @@ import (
 var circleImage *ebiten.Image
 
 type Display struct {
-	PacketEventIn chan capture.PacketEvent
+	PacketEventIn chan packetevent.PacketEvent
 	Universe      *universe.Universe
 	screenWidth   int16
 	screenHeight  int16
 }
 
-func NewDisplay(pe chan capture.PacketEvent, u *universe.Universe) *Display {
+func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe) *Display {
 	conf := config.GetConfig()
 	circleImage = ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
