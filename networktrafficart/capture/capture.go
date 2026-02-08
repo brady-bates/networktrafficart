@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+const (
+	Ipv4Range = 4294967295.0
+)
+
 type PacketEvent struct {
 	Size  int
 	SrcIP net.IP

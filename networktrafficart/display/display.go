@@ -9,6 +9,7 @@ import (
 	"networktrafficart/networktrafficart/capture"
 	"networktrafficart/networktrafficart/dotenv"
 	"networktrafficart/networktrafficart/universe"
+	"networktrafficart/networktrafficart/universe/particle"
 	"networktrafficart/networktrafficart/util"
 	"time"
 )
@@ -72,8 +73,8 @@ func (d *Display) WatchPacketEventChannel(aggressionCurve float64, maxWatcherDel
 		modulatedDelay := maxDelay + mod*(minDelay-maxDelay)
 		micro := time.Duration(modulatedDelay) * time.Microsecond
 
-		p := d.Universe.CreateParticle(packetEvent, d.screenWidth, d.screenHeight)
-		d.Universe.AddToParticles(p)
+		p := particle.CreateParticle(packetEvent, d.screenWidth, d.screenHeight, d.Universe.OffscreenDistance)
+		d.Universe.AddToParticles(p) // TODO batch add?
 
 		//fmt.Printf("PacketEvent: %+v\n", packetEvent)
 		//fmt.Printf("Particle: %+v\n", p)
