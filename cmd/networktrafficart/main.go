@@ -42,6 +42,7 @@ func main() {
 		conf.PacketEventWatcherMaxDelayMicros,
 	)
 
+	ebiten.SetFullscreen(conf.Fullscreen)
 	err = ebiten.RunGame(d)
 	if err != nil {
 		log.Fatal(err)

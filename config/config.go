@@ -14,6 +14,7 @@ var (
 )
 
 type Config struct {
+	Fullscreen                        bool
 	EnableMockPacketEventStream       bool
 	MockPacketEventStreamDelayMicros  int
 	MockPacketEventBatchSize          int
@@ -30,6 +31,7 @@ func LoadConfig() {
 		log.Fatal("Error loading .config file")
 	}
 	config = &Config{
+		Fullscreen:                        u.IsTrueStr(os.Getenv("FULLSCREEN")),
 		EnableMockPacketEventStream:       u.IsTrueStr(os.Getenv("ENABLE_MOCK_PACKET_EVENT_STREAM")),
 		MockPacketEventStreamDelayMicros:  u.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_STREAM_DELAY_MICROS")),
 		MockPacketEventBatchSize:          u.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_BATCH_SIZE")),

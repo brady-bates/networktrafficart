@@ -40,7 +40,6 @@ func (d *Display) Update() error {
 	return nil
 }
 
-// TODO Fix this so it doesn't read while the slice is being written to
 func (d *Display) Draw(screen *ebiten.Image) {
 	d.Universe.DrawParticles(screen, d.baseCircleImage)
 }
