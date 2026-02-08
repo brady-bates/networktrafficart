@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	env := dotenv.GetDotenv()
+	env := dotenv.LoadOrGetDotenv()
 	var packetChan chan gopacket.Packet
 
 	provider, err := capture.NewCaptureProvider("en0")

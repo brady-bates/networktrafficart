@@ -23,7 +23,7 @@ type Display struct {
 }
 
 func NewDisplay(pe chan capture.PacketEvent, u *universe.Universe) *Display {
-	env := dotenv.GetDotenv()
+	env := dotenv.LoadOrGetDotenv()
 	circleImage = ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
 	d := &Display{

@@ -19,4 +19,6 @@ func NewParticle(x, y, yDelta float32, xskew float32, color color.RGBA, size flo
 		Color:  color,
 		Size:   size,
 	}
+
+	return color.RGBA{R: r, G: g, B: b, A: 255}
 }

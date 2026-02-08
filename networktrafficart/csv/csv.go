@@ -50,7 +50,7 @@ func AppendPacketToCSV(writer *csv.Writer, packet gopacket.Packet) error {
 }
 
 func StreamToCSV(packetChan <-chan gopacket.Packet) {
-	env := dotenv.GetDotenv()
+	env := dotenv.LoadOrGetDotenv()
 	_ = os.Remove(env.CsvName)
 	file, err := os.OpenFile(env.CsvName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {

@@ -27,7 +27,7 @@ type Dotenv struct {
 	PacketEventWatcherAggressionCurve float64
 }
 
-func GetDotenv() *Dotenv {
+func LoadOrGetDotenv() *Dotenv {
 	once.Do(func() {
 		if err := godotenv.Load(); err != nil {
 			log.Fatal("Error loading .env file")

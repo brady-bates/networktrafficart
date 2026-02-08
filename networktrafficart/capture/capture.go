@@ -23,7 +23,7 @@ type CaptureProvider struct {
 }
 
 func NewCaptureProvider(deviceName string) (*CaptureProvider, error) {
-	env := dotenv.GetDotenv()
+	env := dotenv.LoadOrGetDotenv()
 
 	handle, err := pcap.OpenLive(deviceName, 65536, true, pcap.BlockForever)
 	if err != nil {
@@ -51,7 +51,7 @@ func NewCaptureProvider(deviceName string) (*CaptureProvider, error) {
 }
 
 func (c *CaptureProvider) StartPacketCapture(packetChan chan<- gopacket.Packet) {
-	env := dotenv.GetDotenv()
+	env := dotenv.LoadOrGetDotenv()
 	source := gopacket.NewPacketSource(c.handle, c.handle.LinkType())
 
 	for packet := range source.Packets() {
@@ -80,7 +80,7 @@ func (c *CaptureProvider) StartPacketCapture(packetChan chan<- gopacket.Packet) 
 }
 
 func (c *CaptureProvider) MockPacketEventStream() {
-	env := dotenv.GetDotenv()
+	env := dotenv.LoadOrGetDotenv()
 	micro := time.Duration(env.MockPacketEventStreamDelayMicros) * time.Microsecond
 	events := make([]PacketEvent, 0, env.MockPacketEventBatchSize)
 
