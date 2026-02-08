@@ -7,7 +7,6 @@ import (
 	"github.com/google/gopacket/pcap"
 	"net"
 	"networktrafficart/capture/packetevent"
-	"networktrafficart/config"
 	"networktrafficart/util"
 	"time"
 )
@@ -21,9 +20,7 @@ type Capture struct {
 	Events chan packetevent.PacketEvent
 }
 
-func NewCaptureProvider(deviceName string) (*Capture, error) {
-	conf := config.GetConfig()
-
+func NewCaptureProvider(deviceName string, enableBPF bool, bpfFilter string) (*Capture, error) {
 	handle, err := pcap.OpenLive(deviceName, 65536, true, pcap.BlockForever)
 	if err != nil {
 		return nil, err
@@ -34,9 +31,9 @@ func NewCaptureProvider(deviceName string) (*Capture, error) {
 		return nil, err
 	}
 
-	if conf.EnableBPF {
-		bpfFilter := fmt.Sprintf("%s %s", conf.BPFFilter, ipv4.String())
-		err = handle.SetBPFFilter(bpfFilter)
+	if enableBPF {
+		filter := fmt.Sprintf("%s %s", bpfFilter, ipv4.String())
+		err = handle.SetBPFFilter(filter)
 		if err != nil {
 			return nil, err
 		}
@@ -49,12 +46,11 @@ func NewCaptureProvider(deviceName string) (*Capture, error) {
 	}, nil
 }
 
-func (c *Capture) StartPacketCapture(packetChan chan<- gopacket.Packet) {
-	conf := config.GetConfig()
+func (c *Capture) StartPacketCapture(packetChan chan<- gopacket.Packet, WritePacketsToCSV bool) {
 	source := gopacket.NewPacketSource(c.handle, c.handle.LinkType())
 
 	for packet := range source.Packets() {
-		if conf.WritePacketsToCSV && packetChan != nil {
+		if WritePacketsToCSV && packetChan != nil {
 			select {
 			case packetChan <- packet:
 			default:
@@ -78,14 +74,13 @@ func (c *Capture) StartPacketCapture(packetChan chan<- gopacket.Packet) {
 	}
 }
 
-func (c *Capture) MockPacketEventStream() {
-	conf := config.GetConfig()
-	micro := time.Duration(conf.MockPacketEventStreamDelayMicros) * time.Microsecond
-	events := make([]packetevent.PacketEvent, 0, conf.MockPacketEventBatchSize)
+func (c *Capture) MockPacketEventStream(delayMicros int, batchSize int) {
+	micro := time.Duration(delayMicros) * time.Microsecond
+	events := make([]packetevent.PacketEvent, 0, batchSize)
 
 	for {
 		events = events[:0]
-		for batch := 0; batch < conf.MockPacketEventBatchSize; batch++ {
+		for batch := 0; batch < batchSize; batch++ {
 			event := packetevent.PacketEvent{
 				Size:  500,
 				SrcIP: util.GenerateRandomIPv4(),

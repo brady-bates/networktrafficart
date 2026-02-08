@@ -7,7 +7,6 @@ import (
 	"image/color"
 	"math"
 	"networktrafficart/capture/packetevent"
-	"networktrafficart/config"
 	"networktrafficart/universe"
 	"networktrafficart/universe/particle"
 	"networktrafficart/util"
@@ -23,8 +22,7 @@ type Display struct {
 	screenHeight  int16
 }
 
-func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe) *Display {
-	conf := config.GetConfig()
+func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe, curve float64, delayMicros int) *Display {
 	circleImage = ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
 	d := &Display{
@@ -33,7 +31,7 @@ func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe) *Display 
 		screenWidth:   800,
 		screenHeight:  600,
 	}
-	go d.WatchPacketEventChannel(conf.PacketEventWatcherAggressionCurve, conf.PacketEventWatcherMaxDelayMicros)
+	go d.WatchPacketEventChannel(curve, delayMicros)
 	return d
 }
 

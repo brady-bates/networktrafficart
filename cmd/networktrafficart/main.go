@@ -15,7 +15,7 @@ func main() {
 	config.LoadConfig()
 	conf := config.GetConfig()
 
-	provider, err := capture.NewCaptureProvider("en0")
+	capt, err := capture.NewCaptureProvider("en0", conf.EnableBPF, conf.BPFFilter)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -23,21 +23,23 @@ func main() {
 	var csvWriterIn chan gopacket.Packet
 	if conf.WritePacketsToCSV {
 		csvWriterIn = make(chan gopacket.Packet)
-		go csv.StreamToCSV(csvWriterIn)
+		go csv.StreamToCSV(csvWriterIn, conf.CsvName)
 	}
 
-	go provider.StartPacketCapture(csvWriterIn)
+	go capt.StartPacketCapture(csvWriterIn, conf.WritePacketsToCSV)
 
 	if conf.EnableMockPacketEventStream {
-		go provider.MockPacketEventStream()
+		go capt.MockPacketEventStream(conf.MockPacketEventStreamDelayMicros, conf.MockPacketEventBatchSize)
 	}
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetFullscreen(false)
 
 	d := display.NewDisplay(
-		provider.Events,
+		capt.Events,
 		universe.NewUniverse(),
+		conf.PacketEventWatcherAggressionCurve,
+		conf.PacketEventWatcherMaxDelayMicros,
 	)
 
 	err = ebiten.RunGame(d)

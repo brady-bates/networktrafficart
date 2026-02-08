@@ -6,7 +6,6 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"log"
-	"networktrafficart/config"
 	"os"
 	"reflect"
 )
@@ -49,10 +48,9 @@ func AppendPacketToCSV(writer *csv.Writer, packet gopacket.Packet) error {
 	return writer.Write(NewPacketRecord(packet).ToStringArray())
 }
 
-func StreamToCSV(packetChan <-chan gopacket.Packet) {
-	conf := config.GetConfig()
-	_ = os.Remove(conf.CsvName)
-	file, err := os.OpenFile(conf.CsvName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+func StreamToCSV(packetChan <-chan gopacket.Packet, filename string) {
+	_ = os.Remove(filename)
+	file, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
