@@ -22,18 +22,16 @@ type Display struct {
 	baseCircleImage *ebiten.Image
 }
 
-func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe, curve float64, delayMicros int) *Display {
+func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe) *Display {
 	circleImage := ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
-	d := &Display{
+	return &Display{
 		PacketEventIn:   pe,
 		Universe:        u,
 		screenWidth:     800,
 		screenHeight:    600,
 		baseCircleImage: circleImage,
 	}
-	go d.WatchPacketEventChannel(curve, delayMicros)
-	return d
 }
 
 func (d *Display) Update() error {
@@ -79,11 +77,8 @@ func (d *Display) WatchPacketEventChannel(aggressionCurve float64, maxWatcherDel
 		modulatedDelay := maxDelay + mod*(minDelay-maxDelay)
 		micro := time.Duration(modulatedDelay) * time.Microsecond
 
-		p := particle.CreateParticle(packetEvent, d.screenWidth, d.screenHeight, d.Universe.OffscreenDistance)
-		d.Universe.AddToParticles(p) // TODO batch add?
+		d.Universe.AddToParticles(particle.CreateFromPacketEvent(packetEvent, d.screenWidth, d.screenHeight))
 
-		//fmt.Printf("PacketEvent: %+v\n", packetEvent)
-		//fmt.Printf("Particle: %+v\n", p)
 		time.Sleep(micro)
 	}
 }

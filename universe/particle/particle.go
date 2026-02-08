@@ -10,6 +10,10 @@ import (
 	"networktrafficart/util"
 )
 
+const (
+	offScreenDistance = 25.0
+)
+
 type Particle struct {
 	X, Y   float32
 	YDelta float32
@@ -18,12 +22,14 @@ type Particle struct {
 	Size   float32
 }
 
-func CreateParticle(pe packetevent.PacketEvent, screenWidth, screenHeight int16, offScreenDistance float32) *Particle {
-	ip := binary.BigEndian.Uint32(pe.SrcIP)
-	xStart := (float32(ip) / capture.IPv4Range) * float32(screenWidth) // TODO fix for ipv6
-	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
+//func TickParticle
 
-	p := &Particle{
+func CreateFromPacketEvent(pe packetevent.PacketEvent, screenWidth, screenHeight int16) *Particle {
+	ip := binary.BigEndian.Uint32(pe.SrcIP)
+	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
+	xStart := (float32(ip) / capture.IPv4Range) * float32(screenWidth) // TODO fix for ipv6
+
+	return &Particle{
 		xStart,
 		float32(screenHeight) + offScreenDistance,
 		5,
@@ -31,8 +37,6 @@ func CreateParticle(pe packetevent.PacketEvent, screenWidth, screenHeight int16,
 		ipv4ToRGBA(pe.SrcIP),
 		float32(pe.Size) / 75,
 	}
-
-	return p
 }
 
 func ipv4ToRGBA(src net.IP) color.RGBA {

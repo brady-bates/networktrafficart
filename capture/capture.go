@@ -7,6 +7,7 @@ import (
 	"github.com/google/gopacket/pcap"
 	"net"
 	"networktrafficart/capture/packetevent"
+	"networktrafficart/config"
 	"networktrafficart/util"
 	"time"
 )
@@ -20,7 +21,7 @@ type Capture struct {
 	Events chan packetevent.PacketEvent
 }
 
-func NewCaptureProvider(deviceName string, enableBPF bool, bpfFilter string) (*Capture, error) {
+func NewCaptureProvider(deviceName string, bpfConfig config.BerkeleyPacketFilter) (*Capture, error) {
 	handle, err := pcap.OpenLive(deviceName, 65536, true, pcap.BlockForever)
 	if err != nil {
 		return nil, err
@@ -31,8 +32,8 @@ func NewCaptureProvider(deviceName string, enableBPF bool, bpfFilter string) (*C
 		return nil, err
 	}
 
-	if enableBPF {
-		filter := fmt.Sprintf("%s %s", bpfFilter, ipv4.String())
+	if bpfConfig.Enable {
+		filter := fmt.Sprintf("%s %s", bpfConfig.Filter, ipv4.String())
 		err = handle.SetBPFFilter(filter)
 		if err != nil {
 			return nil, err

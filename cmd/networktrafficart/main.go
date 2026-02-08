@@ -15,7 +15,7 @@ func main() {
 	config.LoadConfig()
 	conf := config.GetConfig()
 
-	capt, err := capture.NewCaptureProvider("en0", conf.EnableBPF, conf.BPFFilter)
+	capt, err := capture.NewCaptureProvider("en0", conf.BPF)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,9 +38,8 @@ func main() {
 	d := display.NewDisplay(
 		capt.Events,
 		universe.NewUniverse(),
-		conf.PacketEventWatcherAggressionCurve,
-		conf.PacketEventWatcherMaxDelayMicros,
 	)
+	go d.WatchPacketEventChannel(conf.PacketEventWatcherAggressionCurve, conf.PacketEventWatcherMaxDelayMicros)
 
 	ebiten.SetWindowTitle("NetworkTrafficArt")
 	ebiten.SetFullscreen(conf.Fullscreen)

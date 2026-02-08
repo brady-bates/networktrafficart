@@ -21,14 +21,23 @@ type Config struct {
 	PacketEventWatcherMaxDelayMicros  int
 	WritePacketsToCSV                 bool
 	CsvName                           string
-	EnableBPF                         bool
-	BPFFilter                         string
+	BPF                               BerkeleyPacketFilter
 	PacketEventWatcherAggressionCurve float64
+}
+
+type BerkeleyPacketFilter struct {
+	Enable bool
+	Filter string
 }
 
 func LoadConfig() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .config file")
+	}
+
+	bpf := BerkeleyPacketFilter{
+		Enable: u.IsTrueStr(os.Getenv("ENABLE_BPF")),
+		Filter: strings.TrimSpace(os.Getenv("BPF_FILTER")),
 	}
 	config = &Config{
 		Fullscreen:                        u.IsTrueStr(os.Getenv("FULLSCREEN")),
@@ -38,8 +47,7 @@ func LoadConfig() {
 		PacketEventWatcherMaxDelayMicros:  u.ParseToInt(os.Getenv("PACKET_EVENT_WATCHER_MAX_DELAY_MICROS")),
 		WritePacketsToCSV:                 u.IsTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
 		CsvName:                           os.Getenv("CSV_NAME"),
-		EnableBPF:                         u.IsTrueStr(os.Getenv("ENABLE_BPF")),
-		BPFFilter:                         strings.TrimSpace(os.Getenv("BPF_FILTER")),
+		BPF:                               bpf,
 		PacketEventWatcherAggressionCurve: u.ParseToFloat(os.Getenv("PACKET_EVENT_WATCHER_AGGRESSION_CURVE")),
 	}
 	fmt.Println("Config is initialized")
