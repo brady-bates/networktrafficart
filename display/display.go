@@ -13,23 +13,23 @@ import (
 	"time"
 )
 
-var circleImage *ebiten.Image
-
 type Display struct {
-	PacketEventIn chan packetevent.PacketEvent
-	Universe      *universe.Universe
-	screenWidth   int16
-	screenHeight  int16
+	PacketEventIn   chan packetevent.PacketEvent
+	Universe        *universe.Universe
+	screenWidth     int16
+	screenHeight    int16
+	baseCircleImage *ebiten.Image
 }
 
 func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe, curve float64, delayMicros int) *Display {
-	circleImage = ebiten.NewImage(100, 100)
+	circleImage := ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
 	d := &Display{
-		PacketEventIn: pe,
-		Universe:      u,
-		screenWidth:   800,
-		screenHeight:  600,
+		PacketEventIn:   pe,
+		Universe:        u,
+		screenWidth:     800,
+		screenHeight:    600,
+		baseCircleImage: circleImage,
 	}
 	go d.WatchPacketEventChannel(curve, delayMicros)
 	return d
@@ -42,7 +42,7 @@ func (d *Display) Update() error {
 
 // TODO Fix this so it doesn't read while the slice is being written to
 func (d *Display) Draw(screen *ebiten.Image) {
-	d.Universe.DrawParticles(screen, circleImage)
+	d.Universe.DrawParticles(screen, d.baseCircleImage)
 }
 
 func (d *Display) Layout(w, h int) (int, int) {
