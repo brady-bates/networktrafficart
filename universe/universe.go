@@ -3,21 +3,26 @@ package universe
 import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"networktrafficart/universe/particle"
+	"sync"
 )
 
 type Universe struct {
 	Particles         []*particle.Particle
+	mut               sync.RWMutex
 	OffscreenDistance float32
 }
 
 func NewUniverse() *Universe {
 	return &Universe{
 		Particles:         []*particle.Particle{},
+		mut:               sync.RWMutex{},
 		OffscreenDistance: 25,
 	}
 }
 
 func (u *Universe) Tick() {
+	u.mut.Lock()
+	defer u.mut.Unlock()
 	for i := len(u.Particles) - 1; i >= 0; i-- {
 		p := u.Particles[i]
 		p.Y -= p.YDelta
@@ -30,6 +35,8 @@ func (u *Universe) Tick() {
 }
 
 func (u *Universe) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
+	u.mut.RLock()
+	defer u.mut.RUnlock()
 	opts := &ebiten.DrawImageOptions{}
 	for _, p := range u.Particles {
 		opts.GeoM.Reset()
@@ -46,5 +53,7 @@ func (u *Universe) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
 }
 
 func (u *Universe) AddToParticles(p *particle.Particle) {
+	u.mut.Lock()
+	defer u.mut.Unlock()
 	u.Particles = append(u.Particles, p)
 }
