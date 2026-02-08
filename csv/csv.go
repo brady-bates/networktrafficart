@@ -6,6 +6,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"log"
+	"networktrafficart/util"
 	"networktrafficart/util/shutdown"
 	"os"
 	"reflect"
@@ -49,20 +50,31 @@ func AppendPacketToCSV(writer *csv.Writer, packet gopacket.Packet) error {
 }
 
 func StreamToCSV(packetOut <-chan gopacket.Packet, filename string) {
-	_ = os.Remove(filename)
 	sd := shutdown.GetShutDownCtx()
-
-	file, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	writer := csv.NewWriter(file)
-	if err = WriteCSVHeader(writer); err != nil {
-		log.Fatal(err)
-	}
-
+	fileExists, _ := util.FileExists(filename)
+	var file *os.File
+	var err error
+	var writer *csv.Writer
 	var packet gopacket.Packet
+
+	// TODO abort write if file header doesn't match
+	if !fileExists {
+		file, err = os.Create(filename)
+		if writer = csv.NewWriter(file); err != nil {
+			log.Fatal(err)
+		}
+		if err = WriteCSVHeader(writer); err != nil {
+			log.Fatal(err)
+		}
+	}
+	if file, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644); err != nil {
+		log.Fatal(err)
+	}
+
+	if writer = csv.NewWriter(file); err != nil {
+		log.Fatal(err)
+	}
+
 	for {
 		select {
 		case packet = <-packetOut:
