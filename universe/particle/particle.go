@@ -22,7 +22,7 @@ type Particle struct {
 	Size   float32
 }
 
-func CreateFromPacketEvent(pe packetevent.PacketEvent, screenWidth, screenHeight int16) *Particle {
+func CreateFromPacketEvent(pe packetevent.PacketEvent, screenWidth, screenHeight int) *Particle {
 	ip := binary.BigEndian.Uint32(pe.SrcIP)
 	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
 	xStart := (float32(ip) / capture.IPv4Range) * float32(screenWidth) // TODO fix for ipv6

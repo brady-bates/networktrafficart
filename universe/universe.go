@@ -27,16 +27,21 @@ func (u *Universe) Tick() {
 }
 
 func (u *Universe) tickParticles() {
-	pSlice := u.Particles
-	for i := len(pSlice) - 1; i >= 0; i-- {
-		p := pSlice[i]
+	n := 0
+	for _, p := range u.Particles {
 		p.Y -= p.YDelta
 		p.X += p.XSkew
-		if p.Y < -u.OffScreenDistance {
-			copy(pSlice[i:], pSlice[i+1:])
-			pSlice = pSlice[:len(pSlice)-1]
+
+		if p.Y >= -u.OffScreenDistance {
+			u.Particles[n] = p
+			n++
+		} else {
+			u.Particles[n] = nil
 		}
 	}
+
+	clear(u.Particles[n:])
+	u.Particles = u.Particles[:n]
 }
 
 func (u *Universe) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {

@@ -17,8 +17,8 @@ import (
 type Display struct {
 	PacketEventIn   chan packetevent.PacketEvent
 	Universe        *universe.Universe
-	screenWidth     int16
-	screenHeight    int16
+	screenWidth     int
+	screenHeight    int
 	baseCircleImage *ebiten.Image
 }
 
@@ -28,8 +28,8 @@ func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe) *Display 
 	return &Display{
 		PacketEventIn:   pe,
 		Universe:        u,
-		screenWidth:     800,
-		screenHeight:    600,
+		screenWidth:     1920,
+		screenHeight:    1080,
 		baseCircleImage: circleImage,
 	}
 }
@@ -51,9 +51,7 @@ func (d *Display) Draw(screen *ebiten.Image) {
 }
 
 func (d *Display) Layout(w, h int) (int, int) {
-	d.screenWidth = int16(w)
-	d.screenHeight = int16(h)
-	return w, h
+	return d.screenWidth, d.screenHeight
 }
 
 // WatchPacketEventChannel
