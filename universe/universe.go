@@ -9,27 +9,32 @@ import (
 type Universe struct {
 	Particles         []*particle.Particle
 	mut               sync.RWMutex
-	OffscreenDistance float32
+	OffScreenDistance float32
 }
 
 func NewUniverse() *Universe {
 	return &Universe{
 		Particles:         []*particle.Particle{},
 		mut:               sync.RWMutex{},
-		OffscreenDistance: 25,
+		OffScreenDistance: 25,
 	}
 }
 
 func (u *Universe) Tick() {
 	u.mut.Lock()
 	defer u.mut.Unlock()
-	for i := len(u.Particles) - 1; i >= 0; i-- {
-		p := u.Particles[i]
+	u.tickParticles()
+}
+
+func (u *Universe) tickParticles() {
+	pSlice := u.Particles
+	for i := len(pSlice) - 1; i >= 0; i-- {
+		p := pSlice[i]
 		p.Y -= p.YDelta
 		p.X += p.XSkew
-		if p.Y < -u.OffscreenDistance {
-			copy(u.Particles[i:], u.Particles[i+1:])
-			u.Particles = u.Particles[:len(u.Particles)-1]
+		if p.Y < -u.OffScreenDistance {
+			copy(pSlice[i:], pSlice[i+1:])
+			pSlice = pSlice[:len(pSlice)-1]
 		}
 	}
 }

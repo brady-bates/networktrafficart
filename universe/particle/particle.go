@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	offScreenDistance = 25.0
+	offScreenSpawnDistance = 25.0
 )
 
 type Particle struct {
@@ -22,8 +22,6 @@ type Particle struct {
 	Size   float32
 }
 
-//func TickParticle
-
 func CreateFromPacketEvent(pe packetevent.PacketEvent, screenWidth, screenHeight int16) *Particle {
 	ip := binary.BigEndian.Uint32(pe.SrcIP)
 	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
@@ -31,7 +29,7 @@ func CreateFromPacketEvent(pe packetevent.PacketEvent, screenWidth, screenHeight
 
 	return &Particle{
 		xStart,
-		float32(screenHeight) + offScreenDistance,
+		float32(screenHeight) + offScreenSpawnDistance,
 		5,
 		(rand.Float32() - .5) * xSkewIntensity,
 		ipv4ToRGBA(pe.SrcIP),
