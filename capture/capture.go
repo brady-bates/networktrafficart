@@ -6,8 +6,8 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 	"net"
-	"networktrafficart/networktrafficart/dotenv"
-	"networktrafficart/networktrafficart/util"
+	"networktrafficart/dotenv"
+	"networktrafficart/util"
 	"time"
 )
 

@@ -6,7 +6,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"log"
-	"networktrafficart/networktrafficart/dotenv"
+	"networktrafficart/dotenv"
 	"os"
 	"reflect"
 )

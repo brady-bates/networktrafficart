@@ -2,7 +2,7 @@ package universe
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"networktrafficart/networktrafficart/universe/particle"
+	"networktrafficart/universe/particle"
 )
 
 type Universe struct {

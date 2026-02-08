@@ -5,8 +5,8 @@ import (
 	"image/color"
 	"math/rand"
 	"net"
-	"networktrafficart/networktrafficart/capture"
-	"networktrafficart/networktrafficart/util"
+	"networktrafficart/capture"
+	"networktrafficart/util"
 )
 
 type Particle struct {

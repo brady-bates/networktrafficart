@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"log"
-	u "networktrafficart/networktrafficart/util"
+	u "networktrafficart/util"
 	"os"
 	"strings"
 	"sync"

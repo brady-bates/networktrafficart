@@ -4,11 +4,11 @@ import (
 	"github.com/google/gopacket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"log"
-	"networktrafficart/networktrafficart/capture"
-	"networktrafficart/networktrafficart/csv"
-	"networktrafficart/networktrafficart/display"
-	"networktrafficart/networktrafficart/dotenv"
-	"networktrafficart/networktrafficart/universe"
+	"networktrafficart/capture"
+	"networktrafficart/csv"
+	"networktrafficart/display"
+	"networktrafficart/dotenv"
+	"networktrafficart/universe"
 )
 
 func main() {
