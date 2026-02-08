@@ -5,29 +5,30 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"log"
 	"networktrafficart/capture"
+	"networktrafficart/config"
 	"networktrafficart/csv"
 	"networktrafficart/display"
-	"networktrafficart/dotenv"
 	"networktrafficart/universe"
 )
 
 func main() {
-	env := dotenv.LoadOrGetDotenv()
-	var packetChan chan gopacket.Packet
+	config.LoadConfig()
+	conf := config.GetConfig()
 
 	provider, err := capture.NewCaptureProvider("en0")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if env.WritePacketsToCSV {
-		packetChan = make(chan gopacket.Packet)
-		go csv.StreamToCSV(packetChan)
+	var csvWriterIn chan gopacket.Packet
+	if conf.WritePacketsToCSV {
+		csvWriterIn = make(chan gopacket.Packet)
+		go csv.StreamToCSV(csvWriterIn)
 	}
 
-	go provider.StartPacketCapture(packetChan)
+	go provider.StartPacketCapture(csvWriterIn)
 
-	if env.EnableMockPacketEventStream {
+	if conf.EnableMockPacketEventStream {
 		go provider.MockPacketEventStream()
 	}
 

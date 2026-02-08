@@ -6,7 +6,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"log"
-	"networktrafficart/dotenv"
+	"networktrafficart/config"
 	"os"
 	"reflect"
 )
@@ -50,9 +50,9 @@ func AppendPacketToCSV(writer *csv.Writer, packet gopacket.Packet) error {
 }
 
 func StreamToCSV(packetChan <-chan gopacket.Packet) {
-	env := dotenv.LoadOrGetDotenv()
-	_ = os.Remove(env.CsvName)
-	file, err := os.OpenFile(env.CsvName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	conf := config.GetConfig()
+	_ = os.Remove(conf.CsvName)
+	file, err := os.OpenFile(conf.CsvName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}

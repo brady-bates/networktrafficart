@@ -6,7 +6,7 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 	"net"
-	"networktrafficart/dotenv"
+	"networktrafficart/config"
 	"networktrafficart/util"
 	"time"
 )
@@ -27,7 +27,7 @@ type CaptureProvider struct {
 }
 
 func NewCaptureProvider(deviceName string) (*CaptureProvider, error) {
-	env := dotenv.LoadOrGetDotenv()
+	conf := config.GetConfig()
 
 	handle, err := pcap.OpenLive(deviceName, 65536, true, pcap.BlockForever)
 	if err != nil {
@@ -39,8 +39,8 @@ func NewCaptureProvider(deviceName string) (*CaptureProvider, error) {
 		return nil, err
 	}
 
-	if env.EnableBPF {
-		bpfFilter := fmt.Sprintf("%s %s", env.BPFFilter, ipv4.String())
+	if conf.EnableBPF {
+		bpfFilter := fmt.Sprintf("%s %s", conf.BPFFilter, ipv4.String())
 		err = handle.SetBPFFilter(bpfFilter)
 	}
 	if err != nil {
@@ -55,11 +55,11 @@ func NewCaptureProvider(deviceName string) (*CaptureProvider, error) {
 }
 
 func (c *CaptureProvider) StartPacketCapture(packetChan chan<- gopacket.Packet) {
-	env := dotenv.LoadOrGetDotenv()
+	conf := config.GetConfig()
 	source := gopacket.NewPacketSource(c.handle, c.handle.LinkType())
 
 	for packet := range source.Packets() {
-		if env.WritePacketsToCSV && packetChan != nil {
+		if conf.WritePacketsToCSV && packetChan != nil {
 			select {
 			case packetChan <- packet:
 			default:
@@ -84,13 +84,13 @@ func (c *CaptureProvider) StartPacketCapture(packetChan chan<- gopacket.Packet) 
 }
 
 func (c *CaptureProvider) MockPacketEventStream() {
-	env := dotenv.LoadOrGetDotenv()
-	micro := time.Duration(env.MockPacketEventStreamDelayMicros) * time.Microsecond
-	events := make([]PacketEvent, 0, env.MockPacketEventBatchSize)
+	conf := config.GetConfig()
+	micro := time.Duration(conf.MockPacketEventStreamDelayMicros) * time.Microsecond
+	events := make([]PacketEvent, 0, conf.MockPacketEventBatchSize)
 
 	for {
 		events = events[:0]
-		for batch := 0; batch < env.MockPacketEventBatchSize; batch++ {
+		for batch := 0; batch < conf.MockPacketEventBatchSize; batch++ {
 			event := PacketEvent{
 				Size:  500,
 				SrcIP: util.GenerateRandomIPv4(),
