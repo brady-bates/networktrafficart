@@ -7,7 +7,6 @@ import (
 	"github.com/google/gopacket/layers"
 	"log"
 	"networktrafficart/util"
-	"networktrafficart/util/shutdown"
 	"os"
 	"reflect"
 )
@@ -50,7 +49,7 @@ func AppendPacketToCSV(writer *csv.Writer, packet gopacket.Packet) error {
 }
 
 func StreamToCSV(packetOut <-chan gopacket.Packet, filename string) {
-	sd := shutdown.GetShutDownCtx()
+	shutdown := util.GetShutDownCtx()
 	fileExists, _ := util.FileExists(filename)
 	var file *os.File
 	var err error
@@ -81,7 +80,7 @@ func StreamToCSV(packetOut <-chan gopacket.Packet, filename string) {
 			if err = AppendPacketToCSV(writer, packet); err != nil {
 				log.Fatal(err)
 			}
-		case <-sd.Ctx.Done():
+		case <-shutdown.Context.Done():
 			goto shutdown
 		}
 	}

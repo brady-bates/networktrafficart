@@ -1,4 +1,4 @@
-package shutdown
+package util
 
 import (
 	"context"
@@ -11,8 +11,8 @@ var (
 )
 
 type ShutdownContext struct {
-	Ctx    context.Context
-	Cancel context.CancelFunc
+	Context context.Context
+	Cancel  context.CancelFunc
 }
 
 func initialize() {
