@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/google/gopacket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"log"
@@ -15,9 +16,23 @@ func main() {
 	config.LoadConfig()
 	conf := config.GetConfig()
 
-	capt, err := capture.NewCaptureProvider("en0", conf.PacketFilter)
+	captureDeviceName := "en0" // TODO add logic to get the best device to capture with
+
+	capt, err := capture.NewCaptureProvider(captureDeviceName)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if conf.PacketFilter.Enable {
+		ipv4, err := capture.GetInterfaceIPv4(captureDeviceName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		filter := fmt.Sprintf("%s %s", conf.PacketFilter.Filter, ipv4.String())
+		err = capt.Handle.SetBPFFilter(filter)
+		if err != nil {
+			log.Println("Failed to set packet filter ", err)
+		}
 	}
 
 	var csvWriterIn chan gopacket.Packet

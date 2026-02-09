@@ -6,44 +6,30 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 	"net"
-	"networktrafficart/config"
 	"networktrafficart/util"
 	"time"
 )
 
 type Capture struct {
-	handle *pcap.Handle
+	Handle *pcap.Handle
 	Events chan PacketEvent
 }
 
-func NewCaptureProvider(deviceName string, bpfConfig config.PacketFilter) (*Capture, error) {
+func NewCaptureProvider(deviceName string) (*Capture, error) {
 	handle, err := pcap.OpenLive(deviceName, 65536, true, pcap.BlockForever)
 	if err != nil {
 		return nil, err
 	}
 
-	ipv4, err := getInterfaceIPv4(deviceName)
-	if err != nil {
-		return nil, err
-	}
-
-	if bpfConfig.Enable {
-		filter := fmt.Sprintf("%s %s", bpfConfig.Filter, ipv4.String())
-		err = handle.SetBPFFilter(filter)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	bufferLen := 25000
 	return &Capture{
-		handle: handle,
+		Handle: handle,
 		Events: make(chan PacketEvent, bufferLen),
 	}, nil
 }
 
 func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacketsToCSV bool) {
-	source := gopacket.NewPacketSource(c.handle, c.handle.LinkType())
+	source := gopacket.NewPacketSource(c.Handle, c.Handle.LinkType())
 
 	for packet := range source.Packets() {
 		if WritePacketsToCSV && packetIn != nil {
@@ -96,7 +82,7 @@ func (c *Capture) MockPacketEventStream(delayMicros int, batchSize int) {
 	}
 }
 
-func getInterfaceIPv4(deviceName string) (net.IP, error) {
+func GetInterfaceIPv4(deviceName string) (net.IP, error) {
 	devices, err := pcap.FindAllDevs()
 	if err != nil {
 		return nil, err
