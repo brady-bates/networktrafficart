@@ -6,7 +6,6 @@ import (
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 	"net"
-	"networktrafficart/capture/packetevent"
 	"networktrafficart/config"
 	"networktrafficart/util"
 	"time"
@@ -14,7 +13,7 @@ import (
 
 type Capture struct {
 	handle *pcap.Handle
-	Events chan packetevent.PacketEvent
+	Events chan PacketEvent
 }
 
 func NewCaptureProvider(deviceName string, bpfConfig config.PacketFilter) (*Capture, error) {
@@ -39,7 +38,7 @@ func NewCaptureProvider(deviceName string, bpfConfig config.PacketFilter) (*Capt
 	bufferLen := 25000
 	return &Capture{
 		handle: handle,
-		Events: make(chan packetevent.PacketEvent, bufferLen),
+		Events: make(chan PacketEvent, bufferLen),
 	}, nil
 }
 
@@ -57,11 +56,11 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacke
 		if ipLayer := packet.Layer(layers.LayerTypeIPv4); ipLayer != nil { // TODO update this to get ipv6 packets as well
 			ip, _ := ipLayer.(*layers.IPv4)
 
-			event := packetevent.PacketEvent{
-				Size:  len(packet.Data()),
-				SrcIP: ip.SrcIP,
-				DstIP: ip.DstIP,
-			}
+			event := NewPacketEvent(
+				len(packet.Data()),
+				ip.SrcIP,
+				ip.DstIP,
+			)
 
 			select {
 			case c.Events <- event:
@@ -73,16 +72,16 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacke
 
 func (c *Capture) MockPacketEventStream(delayMicros int, batchSize int) {
 	micro := time.Duration(delayMicros) * time.Microsecond
-	events := make([]packetevent.PacketEvent, 0, batchSize)
+	events := make([]PacketEvent, 0, batchSize)
 
 	for {
 		events = events[:0]
 		for batch := 0; batch < batchSize; batch++ {
-			event := packetevent.PacketEvent{
-				Size:  500,
-				SrcIP: util.GenerateRandomIPv4(),
-				DstIP: util.GenerateRandomIPv4(),
-			}
+			event := NewPacketEvent(
+				500,
+				util.GenerateRandomIPv4(),
+				util.GenerateRandomIPv4(),
+			)
 			events = append(events, event)
 		}
 

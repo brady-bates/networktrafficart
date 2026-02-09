@@ -8,7 +8,7 @@ import (
 	"networktrafficart/config"
 	"networktrafficart/csv"
 	"networktrafficart/display"
-	"networktrafficart/universe"
+	"networktrafficart/simulation"
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 
 	d := display.NewDisplay(
 		capt.Events,
-		universe.NewUniverse(),
+		simulation.NewUniverse(),
 	)
 	go d.WatchPacketEventChannel(conf.PacketEventWatcherAggressionCurve, conf.PacketEventWatcherMaxDelayMicros)
 

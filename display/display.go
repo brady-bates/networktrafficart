@@ -6,27 +6,26 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"image/color"
 	"math"
-	"networktrafficart/capture/packetevent"
-	"networktrafficart/universe"
-	"networktrafficart/universe/particle"
+	"networktrafficart/capture"
+	"networktrafficart/simulation"
 	"networktrafficart/util"
 	"time"
 )
 
 type Display struct {
-	PacketEventIn   chan packetevent.PacketEvent
-	Universe        *universe.Universe
+	PacketEventIn   chan capture.PacketEvent
+	Simulation      *simulation.Simulation
 	screenWidth     int
 	screenHeight    int
 	baseCircleImage *ebiten.Image
 }
 
-func NewDisplay(pe chan packetevent.PacketEvent, u *universe.Universe) *Display {
+func NewDisplay(pe chan capture.PacketEvent, u *simulation.Simulation) *Display {
 	circleImage := ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
 	return &Display{
 		PacketEventIn:   pe,
-		Universe:        u,
+		Simulation:      u,
 		screenWidth:     1920,
 		screenHeight:    1080,
 		baseCircleImage: circleImage,
@@ -41,12 +40,12 @@ func (d *Display) Update() error {
 		return ebiten.Termination
 	}
 
-	d.Universe.Tick()
+	d.Simulation.TickSimulation()
 	return nil
 }
 
 func (d *Display) Draw(screen *ebiten.Image) {
-	d.Universe.DrawParticles(screen, d.baseCircleImage)
+	d.Simulation.DrawParticles(screen, d.baseCircleImage)
 }
 
 func (d *Display) Layout(w, h int) (int, int) {
@@ -74,7 +73,7 @@ func (d *Display) WatchPacketEventChannel(aggressionCurve float64, maxWatcherDel
 		modulatedDelay := maxDelay + mod*(minDelay-maxDelay)
 		micro := time.Duration(modulatedDelay) * time.Microsecond
 
-		d.Universe.AddToParticles(particle.CreateFromPacketEvent(packetEvent, d.screenWidth, d.screenHeight))
+		d.Simulation.AddToParticles(simulation.NewParticle(packetEvent, d.screenWidth, d.screenHeight))
 
 		time.Sleep(micro)
 	}

@@ -1,4 +1,4 @@
-package particle
+package simulation
 
 import (
 	"encoding/binary"
@@ -6,7 +6,7 @@ import (
 	"math"
 	"math/rand"
 	"net"
-	"networktrafficart/capture/packetevent"
+	"networktrafficart/capture"
 	"networktrafficart/util"
 )
 
@@ -22,23 +22,31 @@ type Particle struct {
 	Size   float32
 }
 
-func CreateFromPacketEvent(pe packetevent.PacketEvent, screenWidth, screenHeight int) *Particle {
+func NewParticle(pe capture.PacketEvent, screenWidth, screenHeight int) *Particle {
+	return calculateParticleArgs(pe, screenWidth, screenHeight)
+}
+
+func calculateParticleArgs(pe capture.PacketEvent, screenWidth, screenHeight int) *Particle {
 	rand0to1 := rand.Float32() - .5
 	maxIPv4Bits := float32(math.MaxUint32)
 	ip := binary.BigEndian.Uint32(pe.SrcIP)
-	size := float32(pe.Size)
+	packetBits := float32(pe.Size)
 
 	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
+
 	xStart := (float32(ip) / maxIPv4Bits) * float32(screenWidth) // TODO fix for ipv6
-	pixelsPerTick := float32(7.0)
+	yStart := float32(screenHeight) + offScreenSpawnDistance
+	ySpeed := float32(7.0)
+	xSkew := rand0to1 * xSkewIntensity
+	rgba := ipv4ToRGBA(pe.SrcIP)
 
 	return &Particle{
 		xStart,
-		float32(screenHeight) + offScreenSpawnDistance,
-		pixelsPerTick,
-		rand0to1 * xSkewIntensity,
-		ipv4ToRGBA(pe.SrcIP),
-		size / 75,
+		yStart,
+		ySpeed,
+		xSkew,
+		rgba,
+		packetBits / 75,
 	}
 }
 

@@ -1,32 +1,31 @@
-package universe
+package simulation
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"networktrafficart/universe/particle"
 	"sync"
 )
 
-type Universe struct {
-	Particles         []*particle.Particle
+type Simulation struct {
+	Particles         []*Particle
 	mut               sync.RWMutex
 	OffScreenDistance float32
 }
 
-func NewUniverse() *Universe {
-	return &Universe{
-		Particles:         []*particle.Particle{},
+func NewUniverse() *Simulation {
+	return &Simulation{
+		Particles:         []*Particle{},
 		mut:               sync.RWMutex{},
 		OffScreenDistance: 25,
 	}
 }
 
-func (u *Universe) Tick() {
+func (u *Simulation) TickSimulation() {
 	u.mut.Lock()
 	defer u.mut.Unlock()
 	u.tickParticles()
 }
 
-func (u *Universe) tickParticles() {
+func (u *Simulation) tickParticles() {
 	n := 0
 	for _, p := range u.Particles {
 		p.Y -= p.YDelta
@@ -44,7 +43,7 @@ func (u *Universe) tickParticles() {
 	u.Particles = u.Particles[:n]
 }
 
-func (u *Universe) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
+func (u *Simulation) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
 	u.mut.RLock()
 	defer u.mut.RUnlock()
 	opts := &ebiten.DrawImageOptions{}
@@ -62,7 +61,7 @@ func (u *Universe) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
 	}
 }
 
-func (u *Universe) AddToParticles(p *particle.Particle) {
+func (u *Simulation) AddToParticles(p *Particle) {
 	u.mut.Lock()
 	defer u.mut.Unlock()
 	u.Particles = append(u.Particles, p)
