@@ -17,7 +17,7 @@ type Capture struct {
 	Events chan packetevent.PacketEvent
 }
 
-func NewCaptureProvider(deviceName string, bpfConfig config.BerkeleyPacketFilter) (*Capture, error) {
+func NewCaptureProvider(deviceName string, bpfConfig config.PacketFilter) (*Capture, error) {
 	handle, err := pcap.OpenLive(deviceName, 65536, true, pcap.BlockForever)
 	if err != nil {
 		return nil, err

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"log"
-	u "networktrafficart/util"
+	"networktrafficart/util"
 	"os"
 	"strings"
 )
@@ -21,11 +21,11 @@ type Config struct {
 	PacketEventWatcherMaxDelayMicros  int
 	WritePacketsToCSV                 bool
 	CsvName                           string
-	BPF                               BerkeleyPacketFilter
+	PacketFilter                      PacketFilter
 	PacketEventWatcherAggressionCurve float64
 }
 
-type BerkeleyPacketFilter struct {
+type PacketFilter struct {
 	Enable bool
 	Filter string
 }
@@ -35,20 +35,20 @@ func LoadConfig() {
 		log.Fatal("Error loading .config file")
 	}
 
-	bpf := BerkeleyPacketFilter{
-		Enable: u.IsTrueStr(os.Getenv("ENABLE_BPF")),
-		Filter: strings.TrimSpace(os.Getenv("BPF_FILTER")),
+	pf := PacketFilter{
+		Enable: util.IsTrueStr(os.Getenv("ENABLE")),
+		Filter: strings.TrimSpace(os.Getenv("FILTER")),
 	}
 	config = &Config{
-		Fullscreen:                        u.IsTrueStr(os.Getenv("FULLSCREEN")),
-		EnableMockPacketEventStream:       u.IsTrueStr(os.Getenv("ENABLE_MOCK_PACKET_EVENT_STREAM")),
-		MockPacketEventStreamDelayMicros:  u.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_STREAM_DELAY_MICROS")),
-		MockPacketEventBatchSize:          u.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_BATCH_SIZE")),
-		PacketEventWatcherMaxDelayMicros:  u.ParseToInt(os.Getenv("PACKET_EVENT_WATCHER_MAX_DELAY_MICROS")),
-		WritePacketsToCSV:                 u.IsTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
+		Fullscreen:                        util.IsTrueStr(os.Getenv("FULLSCREEN")),
+		EnableMockPacketEventStream:       util.IsTrueStr(os.Getenv("ENABLE_MOCK_PACKET_EVENT_STREAM")),
+		MockPacketEventStreamDelayMicros:  util.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_STREAM_DELAY_MICROS")),
+		MockPacketEventBatchSize:          util.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_BATCH_SIZE")),
+		PacketEventWatcherMaxDelayMicros:  util.ParseToInt(os.Getenv("PACKET_EVENT_WATCHER_MAX_DELAY_MICROS")),
+		WritePacketsToCSV:                 util.IsTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
 		CsvName:                           os.Getenv("CSV_NAME"),
-		BPF:                               bpf,
-		PacketEventWatcherAggressionCurve: u.ParseToFloat(os.Getenv("PACKET_EVENT_WATCHER_AGGRESSION_CURVE")),
+		PacketFilter:                      pf,
+		PacketEventWatcherAggressionCurve: util.ParseToFloat(os.Getenv("PACKET_EVENT_WATCHER_AGGRESSION_CURVE")),
 	}
 	fmt.Println("Config is initialized")
 }

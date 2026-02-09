@@ -15,7 +15,7 @@ func main() {
 	config.LoadConfig()
 	conf := config.GetConfig()
 
-	capt, err := capture.NewCaptureProvider("en0", conf.BPF)
+	capt, err := capture.NewCaptureProvider("en0", conf.PacketFilter)
 	if err != nil {
 		log.Fatal(err)
 	}
