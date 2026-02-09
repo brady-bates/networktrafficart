@@ -11,7 +11,7 @@ type Simulation struct {
 	OffScreenDistance float32
 }
 
-func NewUniverse() *Simulation {
+func NewSimulation() *Simulation {
 	return &Simulation{
 		Particles:         []*Particle{},
 		mut:               sync.RWMutex{},
@@ -19,35 +19,35 @@ func NewUniverse() *Simulation {
 	}
 }
 
-func (u *Simulation) TickSimulation() {
-	u.mut.Lock()
-	defer u.mut.Unlock()
-	u.tickParticles()
+func (s *Simulation) TickSimulation() {
+	s.mut.Lock()
+	defer s.mut.Unlock()
+	s.tickParticles()
 }
 
-func (u *Simulation) tickParticles() {
+func (s *Simulation) tickParticles() {
 	n := 0
-	for _, p := range u.Particles {
+	for _, p := range s.Particles {
 		p.Y -= p.YDelta
 		p.X += p.XSkew
 
-		if p.Y >= -u.OffScreenDistance {
-			u.Particles[n] = p
+		if p.Y >= -s.OffScreenDistance {
+			s.Particles[n] = p
 			n++
 		} else {
-			u.Particles[n] = nil
+			s.Particles[n] = nil
 		}
 	}
 
-	clear(u.Particles[n:])
-	u.Particles = u.Particles[:n]
+	clear(s.Particles[n:])
+	s.Particles = s.Particles[:n]
 }
 
-func (u *Simulation) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
-	u.mut.RLock()
-	defer u.mut.RUnlock()
+func (s *Simulation) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
+	s.mut.RLock()
+	defer s.mut.RUnlock()
 	opts := &ebiten.DrawImageOptions{}
-	for _, p := range u.Particles {
+	for _, p := range s.Particles {
 		opts.GeoM.Reset()
 		opts.ColorScale.Reset()
 
@@ -61,8 +61,8 @@ func (u *Simulation) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
 	}
 }
 
-func (u *Simulation) AddToParticles(p *Particle) {
-	u.mut.Lock()
-	defer u.mut.Unlock()
-	u.Particles = append(u.Particles, p)
+func (s *Simulation) AddToParticles(p *Particle) {
+	s.mut.Lock()
+	defer s.mut.Unlock()
+	s.Particles = append(s.Particles, p)
 }

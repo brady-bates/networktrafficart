@@ -5,6 +5,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/hajimehoshi/ebiten/v2"
 	"log"
+	"net"
 	"networktrafficart/capture"
 	"networktrafficart/config"
 	"networktrafficart/csv"
@@ -24,7 +25,8 @@ func main() {
 	}
 
 	if conf.PacketFilter.Enable {
-		ipv4, err := capture.GetInterfaceIPv4(captureDeviceName)
+		var ipv4 net.IP
+		ipv4, err = capture.GetInterfaceIPv4(captureDeviceName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -52,7 +54,7 @@ func main() {
 
 	d := display.NewDisplay(
 		capt.Events,
-		simulation.NewUniverse(),
+		simulation.NewSimulation(),
 	)
 	go d.WatchPacketEventChannel(conf.PacketEventWatcherAggressionCurve, conf.PacketEventWatcherMaxDelayMicros)
 

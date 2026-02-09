@@ -15,7 +15,7 @@ import (
 type Display struct {
 	PacketEventIn   chan capture.PacketEvent
 	Simulation      *simulation.Simulation
-	screenWidth     int
+	ScreenWidth     int
 	screenHeight    int
 	baseCircleImage *ebiten.Image
 }
@@ -26,7 +26,7 @@ func NewDisplay(pe chan capture.PacketEvent, u *simulation.Simulation) *Display 
 	return &Display{
 		PacketEventIn:   pe,
 		Simulation:      u,
-		screenWidth:     1920,
+		ScreenWidth:     1920,
 		screenHeight:    1080,
 		baseCircleImage: circleImage,
 	}
@@ -49,7 +49,7 @@ func (d *Display) Draw(screen *ebiten.Image) {
 }
 
 func (d *Display) Layout(w, h int) (int, int) {
-	return d.screenWidth, d.screenHeight
+	return d.ScreenWidth, d.screenHeight
 }
 
 // WatchPacketEventChannel
@@ -73,7 +73,7 @@ func (d *Display) WatchPacketEventChannel(aggressionCurve float64, maxWatcherDel
 		modulatedDelay := maxDelay + mod*(minDelay-maxDelay)
 		micro := time.Duration(modulatedDelay) * time.Microsecond
 
-		d.Simulation.AddToParticles(simulation.NewParticle(packetEvent, d.screenWidth, d.screenHeight))
+		d.Simulation.AddToParticles(simulation.NewParticle(packetEvent, d.ScreenWidth, d.screenHeight))
 
 		time.Sleep(micro)
 	}
