@@ -1,38 +1,34 @@
 package display
 
 import (
-	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"image/color"
-	"math"
-	"networktrafficart/capture"
 	"networktrafficart/simulation"
 	"networktrafficart/util"
-	"time"
 )
 
 type Display struct {
-	PacketEventIn   chan capture.PacketEvent
 	Simulation      *simulation.Simulation
 	ScreenWidth     int
-	screenHeight    int
+	ScreenHeight    int
 	baseCircleImage *ebiten.Image
 }
 
-func NewDisplay(pe chan capture.PacketEvent, u *simulation.Simulation) *Display {
+func NewDisplay(s *simulation.Simulation) *Display {
 	circleImage := ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
 	return &Display{
-		PacketEventIn:   pe,
-		Simulation:      u,
+		Simulation:      s,
 		ScreenWidth:     1920,
-		screenHeight:    1080,
+		ScreenHeight:    1080,
 		baseCircleImage: circleImage,
 	}
 }
 
 func (d *Display) Update() error {
+	//fmt.Printf("fps: %f tps: %f\n", ebiten.ActualFPS(), ebiten.ActualTPS())
+
 	if ebiten.IsWindowBeingClosed() {
 		ebiten.SetWindowClosingHandled(true)
 		util.GetShutDownCtx().Cancel()
@@ -40,7 +36,7 @@ func (d *Display) Update() error {
 		return ebiten.Termination
 	}
 
-	d.Simulation.TickSimulation()
+	d.Simulation.Tick()
 	return nil
 }
 
@@ -49,32 +45,5 @@ func (d *Display) Draw(screen *ebiten.Image) {
 }
 
 func (d *Display) Layout(w, h int) (int, int) {
-	return d.ScreenWidth, d.screenHeight
-}
-
-// WatchPacketEventChannel
-// Pulls out of channel and adds to the displays universe
-func (d *Display) WatchPacketEventChannel(aggressionCurve float64, maxWatcherDelay int) {
-	curve := util.ClampValue(aggressionCurve, 0.0, math.Inf(+1))
-	capacity := float64(cap(d.PacketEventIn))
-
-	minDelay := 0.0
-	maxDelay := float64(maxWatcherDelay)
-
-	vals := struct{ Cap, Curve, Min, Max float64 }{capacity, curve, minDelay, maxDelay}
-	fmt.Printf("WatchPacketEventChannel init values: %+v\n", vals)
-
-	for packetEvent := range d.PacketEventIn {
-		dlen := float64(len(d.PacketEventIn))
-
-		fullness := dlen / capacity
-		mod := math.Pow(fullness, curve)
-
-		modulatedDelay := maxDelay + mod*(minDelay-maxDelay)
-		micro := time.Duration(modulatedDelay) * time.Microsecond
-
-		d.Simulation.AddToParticles(simulation.NewParticle(packetEvent, d.ScreenWidth, d.screenHeight))
-
-		time.Sleep(micro)
-	}
+	return d.ScreenWidth, d.ScreenHeight
 }

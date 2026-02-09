@@ -26,13 +26,12 @@ func main() {
 
 	if conf.PacketFilter.Enable {
 		var ipv4 net.IP
-		ipv4, err = capture.GetInterfaceIPv4(captureDeviceName)
-		if err != nil {
+		if ipv4, err = capture.GetInterfaceIPv4(captureDeviceName); err != nil {
 			log.Fatal(err)
 		}
+
 		filter := fmt.Sprintf("%s %s", conf.PacketFilter.Filter, ipv4.String())
-		err = capt.Handle.SetBPFFilter(filter)
-		if err != nil {
+		if err = capt.Handle.SetBPFFilter(filter); err != nil {
 			log.Println("Failed to set packet filter ", err)
 		}
 	}
@@ -52,16 +51,18 @@ func main() {
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetFullscreen(false)
 
-	d := display.NewDisplay(
-		capt.Events,
-		simulation.NewSimulation(),
+	sim := simulation.NewSimulation(capt.Events)
+	disp := display.NewDisplay(sim)
+	go sim.WatchPacketEventChannel(
+		conf.PacketEventWatcherAggressionCurve,
+		conf.PacketEventWatcherMaxDelayMicros,
+		disp.ScreenWidth,
+		disp.ScreenHeight,
 	)
-	go d.WatchPacketEventChannel(conf.PacketEventWatcherAggressionCurve, conf.PacketEventWatcherMaxDelayMicros)
 
 	ebiten.SetWindowTitle("NetworkTrafficArt")
 	ebiten.SetFullscreen(conf.Fullscreen)
-	err = ebiten.RunGame(d)
-	if err != nil {
+	if err = ebiten.RunGame(disp); err != nil {
 		log.Fatal(err)
 	}
 }

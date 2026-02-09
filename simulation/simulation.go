@@ -1,25 +1,31 @@
 package simulation
 
 import (
+	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
+	"math"
+	"networktrafficart/capture"
+	"networktrafficart/util"
 	"sync"
 )
 
 type Simulation struct {
+	PacketEventIn     chan capture.PacketEvent
 	Particles         []*Particle
 	mut               sync.RWMutex
 	OffScreenDistance float32
 }
 
-func NewSimulation() *Simulation {
+func NewSimulation(pe chan capture.PacketEvent) *Simulation {
 	return &Simulation{
+		PacketEventIn:     pe,
 		Particles:         []*Particle{},
 		mut:               sync.RWMutex{},
 		OffScreenDistance: 25,
 	}
 }
 
-func (s *Simulation) TickSimulation() {
+func (s *Simulation) Tick() {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 	s.tickParticles()
@@ -65,4 +71,38 @@ func (s *Simulation) AddToParticles(p *Particle) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 	s.Particles = append(s.Particles, p)
+}
+
+func (s *Simulation) WatchPacketEventChannel(aggressionCurve float64, maxWatcherDelay int, screenWidth, screenHeight int) {
+	fmt.Println(ebiten.WindowSize())
+	curve := util.ClampValue(aggressionCurve, 0.0, math.Inf(+1))
+	capacity := float64(cap(s.PacketEventIn))
+
+	minDelay := 0.0
+	maxDelay := float64(maxWatcherDelay)
+
+	vals := struct{ Capacity, Curve, Min, Max float64 }{capacity, curve, minDelay, maxDelay}
+	fmt.Printf("WatchPacketEventChannel init values: %+v\n", vals)
+
+	var packetEvent capture.PacketEvent
+	for {
+		select {
+		case packetEvent = <-s.PacketEventIn:
+		default:
+		}
+
+		dlen := float64(len(s.PacketEventIn))
+
+		fullness := dlen / capacity
+		mod := math.Pow(fullness, curve)
+
+		modulatedDelay := maxDelay + mod*(minDelay-maxDelay)
+		//micro := time.Duration(modulatedDelay) * time.Microsecond
+
+		fmt.Printf("micros: %f fullness: %.8f mod: %.2f \n", modulatedDelay, fullness, mod)
+
+		s.AddToParticles(NewParticle(packetEvent, screenWidth, screenHeight))
+
+		//time.Sleep(micro)
+	}
 }

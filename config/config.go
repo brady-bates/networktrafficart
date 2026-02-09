@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"networktrafficart/util"
@@ -30,6 +29,7 @@ type PacketFilter struct {
 	Filter string
 }
 
+// TODO add handling for missing env values?
 func LoadConfig() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .config file")
@@ -50,7 +50,6 @@ func LoadConfig() {
 		PacketFilter:                      pf,
 		PacketEventWatcherAggressionCurve: util.ParseToFloat(os.Getenv("PACKET_EVENT_WATCHER_AGGRESSION_CURVE")),
 	}
-	fmt.Println("Config is initialized")
 }
 
 func GetConfig() *Config {
