@@ -114,7 +114,7 @@ func (s *Simulation) CreateParticlesFromBuffer(aggressionCurve float64, maxWatch
 		select {
 		case particle = <-s.particleBuffer:
 			count := float64(len(s.particleBuffer))
-			fullness := count / capacity
+			fullness := count / (capacity * .6)
 			modulationFactor := math.Pow(fullness, curve)
 			modulatedDelay := maxDelay + modulationFactor*(minDelay-maxDelay)
 			micro := time.Duration(modulatedDelay) * time.Microsecond
