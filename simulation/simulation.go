@@ -81,14 +81,10 @@ func (s *Simulation) WatchPacketEventChannel(aggressionCurve float64, maxWatcher
 	minDelay := 0.0
 	maxDelay := float64(maxWatcherDelay)
 
-	vals := struct{ Capacity, Curve, Min, Max float64 }{capacity, curve, minDelay, maxDelay}
-	fmt.Printf("WatchPacketEventChannel init values: %+v\n", vals)
-
 	var packetEvent capture.PacketEvent
 	for {
 		select {
 		case packetEvent = <-s.PacketEventIn:
-		default:
 		}
 
 		dlen := float64(len(s.PacketEventIn))
@@ -101,7 +97,8 @@ func (s *Simulation) WatchPacketEventChannel(aggressionCurve float64, maxWatcher
 
 		fmt.Printf("micros: %f fullness: %.8f mod: %.2f \n", modulatedDelay, fullness, mod)
 
-		s.AddToParticles(NewParticle(packetEvent, screenWidth, screenHeight))
+		p := NewParticle(packetEvent, screenWidth, screenHeight)
+		s.AddToParticles(p)
 
 		//time.Sleep(micro)
 	}
