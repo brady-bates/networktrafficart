@@ -7,22 +7,37 @@ import (
 	"networktrafficart/capture"
 	"networktrafficart/util"
 	"sync"
+	"time"
 )
 
 type Simulation struct {
 	PacketEventIn     chan capture.PacketEvent
-	Particles         []*Particle
+	Particles         []Particle
 	mut               sync.RWMutex
 	OffScreenDistance float32
+	particleBuffer    chan Particle
 }
 
 func NewSimulation(pe chan capture.PacketEvent) *Simulation {
+	size := 2500000
 	return &Simulation{
 		PacketEventIn:     pe,
-		Particles:         []*Particle{},
+		Particles:         []Particle{},
 		mut:               sync.RWMutex{},
 		OffScreenDistance: 25,
+		particleBuffer:    make(chan Particle, size),
 	}
+}
+
+func (s *Simulation) Init(screenWidth, screenHeight int, ParticleBufferConsumerAggressionCurve float64, ParticleBufferConsumerMaxDelayMicros int) {
+	go s.WatchPacketEventChannel(
+		screenWidth,
+		screenHeight,
+	)
+	go s.CreateParticlesFromBuffer(
+		ParticleBufferConsumerAggressionCurve,
+		ParticleBufferConsumerMaxDelayMicros,
+	)
 }
 
 func (s *Simulation) Tick() {
@@ -32,7 +47,7 @@ func (s *Simulation) Tick() {
 }
 
 func (s *Simulation) tickParticles() {
-	n := 0
+	var n int
 	for _, p := range s.Particles {
 		p.Y -= p.YDelta
 		p.X += p.XSkew
@@ -41,7 +56,7 @@ func (s *Simulation) tickParticles() {
 			s.Particles[n] = p
 			n++
 		} else {
-			s.Particles[n] = nil
+			s.Particles[n] = Particle{}
 		}
 	}
 
@@ -57,9 +72,9 @@ func (s *Simulation) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
 		opts.GeoM.Reset()
 		opts.ColorScale.Reset()
 
-		s := float64(p.Size / 50)
+		scale := float64(p.Size / 50)
 
-		opts.GeoM.Scale(s, s)
+		opts.GeoM.Scale(scale, scale)
 		opts.GeoM.Translate(float64(p.X), float64(p.Y))
 		opts.ColorScale.ScaleWithColor(p.Color)
 
@@ -67,39 +82,47 @@ func (s *Simulation) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
 	}
 }
 
-func (s *Simulation) AddToParticles(p *Particle) {
+func (s *Simulation) AddToParticles(p Particle) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 	s.Particles = append(s.Particles, p)
 }
 
-func (s *Simulation) WatchPacketEventChannel(aggressionCurve float64, maxWatcherDelay int, screenWidth, screenHeight int) {
-	fmt.Println(ebiten.WindowSize())
-	curve := util.ClampValue(aggressionCurve, 0.0, math.Inf(+1))
-	capacity := float64(cap(s.PacketEventIn))
-
-	minDelay := 0.0
-	maxDelay := float64(maxWatcherDelay)
-
+func (s *Simulation) WatchPacketEventChannel(screenWidth, screenHeight int) {
 	var packetEvent capture.PacketEvent
 	for {
 		select {
 		case packetEvent = <-s.PacketEventIn:
 		}
 
-		dlen := float64(len(s.PacketEventIn))
+		select {
+		case s.particleBuffer <- *NewParticle(packetEvent, screenWidth, screenHeight):
+		default:
+			fmt.Println("Particle buffer is full")
+		}
+	}
+}
 
-		fullness := dlen / capacity
-		mod := math.Pow(fullness, curve)
+func (s *Simulation) CreateParticlesFromBuffer(aggressionCurve float64, maxWatcherDelay int) {
+	curve := util.ClampValue(aggressionCurve, 0.0, math.Inf(+1))
+	capacity := float64(cap(s.particleBuffer))
+	minDelay := 0.0
+	maxDelay := float64(maxWatcherDelay)
 
-		modulatedDelay := maxDelay + mod*(minDelay-maxDelay)
-		//micro := time.Duration(modulatedDelay) * time.Microsecond
+	var particle Particle
+	for {
+		select {
+		case particle = <-s.particleBuffer:
+			count := float64(len(s.particleBuffer))
+			fullness := count / capacity
+			modulationFactor := math.Pow(fullness, curve)
+			modulatedDelay := maxDelay + modulationFactor*(minDelay-maxDelay)
+			micro := time.Duration(modulatedDelay) * time.Microsecond
 
-		fmt.Printf("micros: %f fullness: %.8f mod: %.2f \n", modulatedDelay, fullness, mod)
+			s.AddToParticles(particle)
 
-		p := NewParticle(packetEvent, screenWidth, screenHeight)
-		s.AddToParticles(p)
-
-		//time.Sleep(micro)
+			fmt.Printf("delay: %f\n", modulatedDelay)
+			time.Sleep(micro)
+		}
 	}
 }

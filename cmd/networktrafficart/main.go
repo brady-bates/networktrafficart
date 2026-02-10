@@ -53,15 +53,16 @@ func main() {
 
 	sim := simulation.NewSimulation(capt.Events)
 	disp := display.NewDisplay(sim)
-	go sim.WatchPacketEventChannel(
-		conf.PacketEventWatcherAggressionCurve,
-		conf.PacketEventWatcherMaxDelayMicros,
-		disp.ScreenWidth,
-		disp.ScreenHeight,
-	)
 
 	ebiten.SetWindowTitle("NetworkTrafficArt")
 	ebiten.SetFullscreen(conf.Fullscreen)
+
+	sim.Init(
+		disp.ScreenWidth,
+		disp.ScreenHeight,
+		conf.ParticleBufferConsumerAggressionCurve,
+		conf.ParticleBufferConsumerMaxDelayMicros,
+	)
 	if err = ebiten.RunGame(disp); err != nil {
 		log.Fatal(err)
 	}

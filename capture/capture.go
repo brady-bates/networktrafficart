@@ -22,7 +22,7 @@ func NewCaptureProvider(deviceName string) (*Capture, error) {
 		return nil, err
 	}
 
-	bufferLen := 25000
+	bufferLen := 2500000
 	return &Capture{
 		Handle: handle,
 		Events: make(chan PacketEvent, bufferLen),

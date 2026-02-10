@@ -23,10 +23,6 @@ type Particle struct {
 }
 
 func NewParticle(pe capture.PacketEvent, screenWidth, screenHeight int) *Particle {
-	return calculateParticleArgs(pe, screenWidth, screenHeight)
-}
-
-func calculateParticleArgs(pe capture.PacketEvent, screenWidth, screenHeight int) *Particle {
 	rand0to1 := rand.Float32() - .5
 	maxIPv4Bits := float32(math.MaxUint32)
 	ip := binary.BigEndian.Uint32(pe.SrcIP)

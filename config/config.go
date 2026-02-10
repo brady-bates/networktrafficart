@@ -13,15 +13,15 @@ var (
 )
 
 type Config struct {
-	Fullscreen                        bool
-	EnableMockPacketEventStream       bool
-	MockPacketEventStreamDelayMicros  int
-	MockPacketEventBatchSize          int
-	PacketEventWatcherMaxDelayMicros  int
-	WritePacketsToCSV                 bool
-	CsvName                           string
-	PacketFilter                      PacketFilter
-	PacketEventWatcherAggressionCurve float64
+	Fullscreen                            bool
+	EnableMockPacketEventStream           bool
+	MockPacketEventStreamDelayMicros      int
+	MockPacketEventBatchSize              int
+	ParticleBufferConsumerMaxDelayMicros  int
+	WritePacketsToCSV                     bool
+	CsvName                               string
+	PacketFilter                          PacketFilter
+	ParticleBufferConsumerAggressionCurve float64
 }
 
 type PacketFilter struct {
@@ -32,23 +32,22 @@ type PacketFilter struct {
 // TODO add handling for missing env values?
 func LoadConfig() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .config file")
+		log.Fatal("Error loading .env file")
 	}
-
 	pf := PacketFilter{
 		Enable: util.IsTrueStr(os.Getenv("ENABLE")),
 		Filter: strings.TrimSpace(os.Getenv("FILTER")),
 	}
 	config = &Config{
-		Fullscreen:                        util.IsTrueStr(os.Getenv("FULLSCREEN")),
-		EnableMockPacketEventStream:       util.IsTrueStr(os.Getenv("ENABLE_MOCK_PACKET_EVENT_STREAM")),
-		MockPacketEventStreamDelayMicros:  util.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_STREAM_DELAY_MICROS")),
-		MockPacketEventBatchSize:          util.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_BATCH_SIZE")),
-		PacketEventWatcherMaxDelayMicros:  util.ParseToInt(os.Getenv("PACKET_EVENT_WATCHER_MAX_DELAY_MICROS")),
-		WritePacketsToCSV:                 util.IsTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
-		CsvName:                           os.Getenv("CSV_NAME"),
-		PacketFilter:                      pf,
-		PacketEventWatcherAggressionCurve: util.ParseToFloat(os.Getenv("PACKET_EVENT_WATCHER_AGGRESSION_CURVE")),
+		Fullscreen:                            util.IsTrueStr(os.Getenv("FULLSCREEN")),
+		EnableMockPacketEventStream:           util.IsTrueStr(os.Getenv("ENABLE_MOCK_PACKET_EVENT_STREAM")),
+		MockPacketEventStreamDelayMicros:      util.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_STREAM_DELAY_MICROS")),
+		MockPacketEventBatchSize:              util.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_BATCH_SIZE")),
+		ParticleBufferConsumerMaxDelayMicros:  util.ParseToInt(os.Getenv("PARTICLE_BUFFER_CONSUMER_MAX_DELAY_MICROS")),
+		WritePacketsToCSV:                     util.IsTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
+		CsvName:                               os.Getenv("CSV_NAME"),
+		PacketFilter:                          pf,
+		ParticleBufferConsumerAggressionCurve: util.ParseToFloat(os.Getenv("PARTICLE_BUFFER_CONSUMER_AGGRESSION_CURVE")),
 	}
 }
 
