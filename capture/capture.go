@@ -5,6 +5,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"log"
 	"net"
 	"networktrafficart/util"
 	"time"
@@ -51,6 +52,7 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacke
 			select {
 			case c.Events <- event:
 			default:
+				log.Println("Dropped packet (channel full)")
 			}
 		}
 	}
