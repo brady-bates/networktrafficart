@@ -13,16 +13,19 @@ type Display struct {
 	ScreenWidth     int
 	ScreenHeight    int
 	baseCircleImage *ebiten.Image
+	screenBuffer    *ebiten.Image
 }
 
 func NewDisplay(s *simulation.Simulation) *Display {
+	sw, sh := 1920, 1080
 	circleImage := ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
 	return &Display{
 		Simulation:      s,
-		ScreenWidth:     1920,
-		ScreenHeight:    1080,
+		ScreenWidth:     sw,
+		ScreenHeight:    sh,
 		baseCircleImage: circleImage,
+		screenBuffer:    ebiten.NewImage(sw, sh),
 	}
 }
 
@@ -41,7 +44,9 @@ func (d *Display) Update() error {
 }
 
 func (d *Display) Draw(screen *ebiten.Image) {
-	d.Simulation.DrawParticles(screen, d.baseCircleImage)
+	d.screenBuffer.Clear()
+	d.Simulation.DrawParticles(d.screenBuffer, d.baseCircleImage)
+	screen.DrawImage(d.screenBuffer, nil)
 }
 
 func (d *Display) Layout(w, h int) (int, int) {
