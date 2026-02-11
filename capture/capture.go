@@ -3,7 +3,6 @@ package capture
 import (
 	"fmt"
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 	"log"
 	"net"
@@ -32,6 +31,7 @@ func NewCaptureProvider(deviceName string) (*Capture, error) {
 func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacketsToCSV bool) {
 	source := gopacket.NewPacketSource(c.Handle, c.Handle.LinkType())
 
+	var netLayer gopacket.Layer
 	for packet := range source.Packets() {
 		if WritePacketsToCSV && packetIn != nil {
 			select {
@@ -40,20 +40,19 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacke
 			}
 		}
 
-		if ipLayer := packet.Layer(layers.LayerTypeIPv4); ipLayer != nil { // TODO update this to get ipv6 packets as well
-			ip, _ := ipLayer.(*layers.IPv4)
+		netLayer = packet.NetworkLayer()
+		if netLayer == nil {
+			continue
+		}
 
-			event := NewEvent(
-				len(packet.Data()),
-				ip.SrcIP,
-				ip.DstIP,
-			)
-
+		if IsValidLayerType(netLayer.LayerType()) { // TODO update this to get ipv6 packets as well
 			select {
-			case c.Events <- event:
+			case c.Events <- NewEventFromPacket(packet):
 			default:
 				log.Println("Dropped packet (channel full)")
 			}
+		} else {
+			log.Printf("Dropped packet (invalid network layer type %s)\n", netLayer.LayerType())
 		}
 	}
 }

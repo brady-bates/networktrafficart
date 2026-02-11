@@ -48,12 +48,10 @@ func main() {
 		go capt.MockEventStream(conf.MockEventStreamDelayMicros, conf.MockEventBatchSize)
 	}
 
-	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	ebiten.SetFullscreen(false)
-
 	sim := simulation.NewSimulation(capt.Events)
 	disp := display.NewDisplay(sim)
 
+	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowTitle("NetworkTrafficArt")
 	ebiten.SetFullscreen(conf.Fullscreen)
 

@@ -96,7 +96,7 @@ func (s *Simulation) WatchEventChannel(screenWidth, screenHeight int) {
 		}
 
 		select {
-		case s.particleBuffer <- *NewParticle(event, screenWidth, screenHeight):
+		case s.particleBuffer <- NewParticle(event, screenWidth, screenHeight):
 		default:
 			fmt.Println("Particle buffer is full")
 		}
@@ -121,7 +121,6 @@ func (s *Simulation) CreateParticlesFromBuffer(aggressionCurve float64, maxWatch
 
 			s.AddToParticles(particle)
 
-			fmt.Printf("delay: %f\n", modulatedDelay)
 			time.Sleep(micro)
 		}
 	}
