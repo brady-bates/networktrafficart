@@ -24,13 +24,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if conf.PacketFilter.Enable {
+	if conf.EnablePacketCaptureFilter {
 		var ipv4 net.IP
 		if ipv4, err = capture.GetInterfaceIPv4(captureDeviceName); err != nil {
 			log.Fatal(err)
 		}
 
-		filter := fmt.Sprintf("%s %s", conf.PacketFilter.Filter, ipv4.String())
+		filter := fmt.Sprintf("%s %s", conf.PacketCaptureFilter, ipv4.String())
 		if err = capt.Handle.SetBPFFilter(filter); err != nil {
 			log.Println("Failed to set packet filter ", err)
 		}

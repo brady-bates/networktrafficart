@@ -20,23 +20,15 @@ type Config struct {
 	ParticleBufferConsumerMaxDelayMicros  int
 	WritePacketsToCSV                     bool
 	CsvName                               string
-	PacketFilter                          PacketFilter
+	EnablePacketCaptureFilter             bool
+	PacketCaptureFilter                   string
 	ParticleBufferConsumerAggressionCurve float64
-}
-
-type PacketFilter struct {
-	Enable bool
-	Filter string
 }
 
 // TODO add handling for missing env values?
 func LoadConfig() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
-	}
-	pf := PacketFilter{
-		Enable: util.IsTrueStr(os.Getenv("ENABLE")),
-		Filter: strings.TrimSpace(os.Getenv("FILTER")),
 	}
 	config = &Config{
 		Fullscreen:                            util.IsTrueStr(os.Getenv("FULLSCREEN")),
@@ -46,7 +38,8 @@ func LoadConfig() {
 		ParticleBufferConsumerMaxDelayMicros:  util.ParseToInt(os.Getenv("PARTICLE_BUFFER_CONSUMER_MAX_DELAY_MICROS")),
 		WritePacketsToCSV:                     util.IsTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
 		CsvName:                               os.Getenv("CSV_NAME"),
-		PacketFilter:                          pf,
+		EnablePacketCaptureFilter:             util.IsTrueStr(os.Getenv("ENABLE_PACKET_CAPTURE_FILTER")),
+		PacketCaptureFilter:                   strings.TrimSpace(os.Getenv("PACKET_CAPTURE_FILTER")),
 		ParticleBufferConsumerAggressionCurve: util.ParseToFloat(os.Getenv("PARTICLE_BUFFER_CONSUMER_AGGRESSION_CURVE")),
 	}
 }

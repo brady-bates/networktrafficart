@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	shutdowncontext *ShutdownContext
+	shutDownContext *ShutdownContext
 	onceLock        sync.Once
 )
 
@@ -18,11 +18,11 @@ type ShutdownContext struct {
 func initialize() {
 	onceLock.Do(func() {
 		ctx, cancel := context.WithCancel(context.Background())
-		shutdowncontext = &ShutdownContext{ctx, cancel}
+		shutDownContext = &ShutdownContext{ctx, cancel}
 	})
 }
 
 func GetShutDownCtx() *ShutdownContext {
 	initialize()
-	return shutdowncontext
+	return shutDownContext
 }

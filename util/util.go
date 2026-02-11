@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func ClampValue(val, min, max float64) float64 {
@@ -15,7 +16,7 @@ func ClampValue(val, min, max float64) float64 {
 }
 
 func IsTrueStr(s string) bool {
-	return s == "true"
+	return strings.TrimSpace(s) == "true"
 }
 
 func ParseToInt(s string) int {
