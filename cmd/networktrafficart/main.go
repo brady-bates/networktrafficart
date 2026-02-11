@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"networktrafficart/capture"
+	"networktrafficart/capture/mockeventstream"
 	"networktrafficart/config"
 	"networktrafficart/csv"
 	"networktrafficart/display"
@@ -45,7 +46,7 @@ func main() {
 	go capt.StartPacketCapture(csvWriterIn, conf.WritePacketsToCSV)
 
 	if conf.EnableMockEventStream {
-		go capt.MockEventStream(conf.MockEventStreamDelayMicros, conf.MockEventBatchSize)
+		go mockeventstream.Init(capt, conf.MockEventStreamDelayMicros, conf.MockEventBatchSize)
 	}
 
 	sim := simulation.NewSimulation(capt.Events)

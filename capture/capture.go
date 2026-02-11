@@ -6,8 +6,6 @@ import (
 	"github.com/google/gopacket/pcap"
 	"log"
 	"net"
-	"networktrafficart/util"
-	"time"
 )
 
 type Capture struct {
@@ -54,32 +52,6 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacke
 		} else {
 			log.Printf("Dropped packet (invalid network layer type %s)\n", netLayer.LayerType())
 		}
-	}
-}
-
-func (c *Capture) MockEventStream(delayMicros int, batchSize int) {
-	micro := time.Duration(delayMicros) * time.Microsecond
-	events := make([]Event, 0, batchSize)
-
-	for {
-		events = events[:0]
-		for batch := 0; batch < batchSize; batch++ {
-			event := NewEvent(
-				500,
-				util.GenerateRandomIPv4(),
-				util.GenerateRandomIPv4(),
-			)
-			events = append(events, event)
-		}
-
-		for _, event := range events {
-			select {
-			case c.Events <- event:
-			default:
-			}
-		}
-
-		time.Sleep(micro)
 	}
 }
 
