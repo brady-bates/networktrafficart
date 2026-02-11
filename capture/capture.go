@@ -13,7 +13,7 @@ import (
 
 type Capture struct {
 	Handle *pcap.Handle
-	Events chan PacketEvent
+	Events chan Event
 }
 
 func NewCaptureProvider(deviceName string) (*Capture, error) {
@@ -25,7 +25,7 @@ func NewCaptureProvider(deviceName string) (*Capture, error) {
 	bufferLen := 2500000
 	return &Capture{
 		Handle: handle,
-		Events: make(chan PacketEvent, bufferLen),
+		Events: make(chan Event, bufferLen),
 	}, nil
 }
 
@@ -43,7 +43,7 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacke
 		if ipLayer := packet.Layer(layers.LayerTypeIPv4); ipLayer != nil { // TODO update this to get ipv6 packets as well
 			ip, _ := ipLayer.(*layers.IPv4)
 
-			event := NewPacketEvent(
+			event := NewEvent(
 				len(packet.Data()),
 				ip.SrcIP,
 				ip.DstIP,
@@ -58,14 +58,14 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacke
 	}
 }
 
-func (c *Capture) MockPacketEventStream(delayMicros int, batchSize int) {
+func (c *Capture) MockEventStream(delayMicros int, batchSize int) {
 	micro := time.Duration(delayMicros) * time.Microsecond
-	events := make([]PacketEvent, 0, batchSize)
+	events := make([]Event, 0, batchSize)
 
 	for {
 		events = events[:0]
 		for batch := 0; batch < batchSize; batch++ {
-			event := NewPacketEvent(
+			event := NewEvent(
 				500,
 				util.GenerateRandomIPv4(),
 				util.GenerateRandomIPv4(),

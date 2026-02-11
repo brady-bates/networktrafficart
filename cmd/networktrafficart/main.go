@@ -44,8 +44,8 @@ func main() {
 
 	go capt.StartPacketCapture(csvWriterIn, conf.WritePacketsToCSV)
 
-	if conf.EnableMockPacketEventStream {
-		go capt.MockPacketEventStream(conf.MockPacketEventStreamDelayMicros, conf.MockPacketEventBatchSize)
+	if conf.EnableMockEventStream {
+		go capt.MockEventStream(conf.MockEventStreamDelayMicros, conf.MockEventBatchSize)
 	}
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)

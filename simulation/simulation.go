@@ -11,17 +11,17 @@ import (
 )
 
 type Simulation struct {
-	PacketEventIn     chan capture.PacketEvent
+	EventIn           chan capture.Event
 	Particles         []Particle
 	mut               sync.RWMutex
 	OffScreenDistance float32
 	particleBuffer    chan Particle
 }
 
-func NewSimulation(pe chan capture.PacketEvent) *Simulation {
+func NewSimulation(e chan capture.Event) *Simulation {
 	size := 2500000
 	return &Simulation{
-		PacketEventIn:     pe,
+		EventIn:           e,
 		Particles:         []Particle{},
 		mut:               sync.RWMutex{},
 		OffScreenDistance: 25,
@@ -30,7 +30,7 @@ func NewSimulation(pe chan capture.PacketEvent) *Simulation {
 }
 
 func (s *Simulation) Init(screenWidth, screenHeight int, ParticleBufferConsumerAggressionCurve float64, ParticleBufferConsumerMaxDelayMicros int) {
-	go s.WatchPacketEventChannel(
+	go s.WatchEventChannel(
 		screenWidth,
 		screenHeight,
 	)
@@ -88,15 +88,15 @@ func (s *Simulation) AddToParticles(p Particle) {
 	s.Particles = append(s.Particles, p)
 }
 
-func (s *Simulation) WatchPacketEventChannel(screenWidth, screenHeight int) {
-	var packetEvent capture.PacketEvent
+func (s *Simulation) WatchEventChannel(screenWidth, screenHeight int) {
+	var event capture.Event
 	for {
 		select {
-		case packetEvent = <-s.PacketEventIn:
+		case event = <-s.EventIn:
 		}
 
 		select {
-		case s.particleBuffer <- *NewParticle(packetEvent, screenWidth, screenHeight):
+		case s.particleBuffer <- *NewParticle(event, screenWidth, screenHeight):
 		default:
 			fmt.Println("Particle buffer is full")
 		}

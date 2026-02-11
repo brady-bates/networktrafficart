@@ -22,7 +22,7 @@ type Particle struct {
 	Size   float32
 }
 
-func NewParticle(pe capture.PacketEvent, screenWidth, screenHeight int) *Particle {
+func NewParticle(pe capture.Event, screenWidth, screenHeight int) *Particle {
 	rand0to1 := rand.Float32() - .5
 	maxIPv4Bits := float32(math.MaxUint32)
 	ip := binary.BigEndian.Uint32(pe.SrcIP)

@@ -14,9 +14,9 @@ var (
 
 type Config struct {
 	Fullscreen                            bool
-	EnableMockPacketEventStream           bool
-	MockPacketEventStreamDelayMicros      int
-	MockPacketEventBatchSize              int
+	EnableMockEventStream                 bool
+	MockEventStreamDelayMicros            int
+	MockEventBatchSize                    int
 	ParticleBufferConsumerMaxDelayMicros  int
 	WritePacketsToCSV                     bool
 	CsvName                               string
@@ -40,9 +40,9 @@ func LoadConfig() {
 	}
 	config = &Config{
 		Fullscreen:                            util.IsTrueStr(os.Getenv("FULLSCREEN")),
-		EnableMockPacketEventStream:           util.IsTrueStr(os.Getenv("ENABLE_MOCK_PACKET_EVENT_STREAM")),
-		MockPacketEventStreamDelayMicros:      util.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_STREAM_DELAY_MICROS")),
-		MockPacketEventBatchSize:              util.ParseToInt(os.Getenv("MOCK_PACKET_EVENT_BATCH_SIZE")),
+		EnableMockEventStream:                 util.IsTrueStr(os.Getenv("ENABLE_MOCK_EVENT_STREAM")),
+		MockEventStreamDelayMicros:            util.ParseToInt(os.Getenv("MOCK_EVENT_STREAM_DELAY_MICROS")),
+		MockEventBatchSize:                    util.ParseToInt(os.Getenv("MOCK_EVENT_BATCH_SIZE")),
 		ParticleBufferConsumerMaxDelayMicros:  util.ParseToInt(os.Getenv("PARTICLE_BUFFER_CONSUMER_MAX_DELAY_MICROS")),
 		WritePacketsToCSV:                     util.IsTrueStr(os.Getenv("WRITE_PACKETS_TO_CSV")),
 		CsvName:                               os.Getenv("CSV_NAME"),
