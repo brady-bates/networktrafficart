@@ -29,6 +29,7 @@ func NewSimulation(e chan capture.Event) *Simulation {
 	}
 }
 
+// TODO add background noise in the lulls, make it low key and natural
 func (s *Simulation) Init(screenWidth, screenHeight int, ParticleBufferConsumerAggressionCurve float64, ParticleBufferConsumerMaxDelayMicros int) {
 	go s.WatchEventChannel(
 		screenWidth,

@@ -40,59 +40,51 @@ type PacketRecord struct {
 	DNSResponseCode int32
 }
 
-func WriteCSVHeader(writer *csv.Writer) error {
-	return writer.Write(ReflectPacketRecord())
-}
-
 func AppendPacketToCSV(writer *csv.Writer, packet gopacket.Packet) error {
 	return writer.Write(NewPacketRecord(packet).ToStringArray())
 }
 
 func StreamToCSV(packetOut <-chan gopacket.Packet, filename string) {
-	shutdown := util.GetShutDownCtx()
-	fileExists, _ := util.FileExists(filename)
 	var file *os.File
 	var err error
-	var writer *csv.Writer
-	var packet gopacket.Packet
 
-	// TODO abort write if file header doesn't match
-	if !fileExists {
+	shutDown := util.GetShutDownCtx()
+	fileExists, _ := util.FileExists(filename)
+
+	if fileExists {
+		if file, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644); err != nil {
+			log.Fatal(err)
+		}
+	} else {
 		file, err = os.Create(filename)
-		if writer = csv.NewWriter(file); err != nil {
-			log.Fatal(err)
-		}
-		if err = WriteCSVHeader(writer); err != nil {
-			log.Fatal(err)
-		}
-	}
-	if file, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644); err != nil {
-		log.Fatal(err)
 	}
 
-	if writer = csv.NewWriter(file); err != nil {
-		log.Fatal(err)
+	writer := csv.NewWriter(file)
+
+	if !fileExists {
+		if err = writer.Write(ReflectPacketRecord()); err != nil {
+			log.Fatal(err)
+		}
+		writer.Flush()
 	}
 
 	for {
 		select {
-		case packet = <-packetOut:
+		case packet := <-packetOut:
 			if err = AppendPacketToCSV(writer, packet); err != nil {
-				log.Fatal(err)
+				log.Fatal("Failed to append to file: ", err)
 			}
-		case <-shutdown.Context.Done():
-			goto shutdown
+		case <-shutDown.Context.Done():
+			fmt.Println("Shutdown signal received")
+			writer.Flush()
+			if err = file.Sync(); err != nil {
+				log.Println(err)
+			}
+			if err = file.Close(); err != nil {
+				log.Println(err)
+			}
+			return
 		}
-	}
-
-shutdown:
-	fmt.Println("Shutdown signal received")
-	writer.Flush()
-	if err = file.Sync(); err != nil {
-		log.Println(err)
-	}
-	if err = file.Close(); err != nil {
-		log.Println(err)
 	}
 }
 
