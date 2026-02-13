@@ -19,19 +19,19 @@ func NewCaptureProvider(deviceName string) (*Capture, error) {
 		return nil, err
 	}
 
-	bufferLen := 2500000
+	bufferLen := 50000
 	return &Capture{
 		Handle: handle,
 		Events: make(chan Event, bufferLen),
 	}, nil
 }
 
-func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacketsToCSV bool) {
+func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet) {
 	source := gopacket.NewPacketSource(c.Handle, c.Handle.LinkType())
 
 	var netLayer gopacket.Layer
 	for packet := range source.Packets() {
-		if WritePacketsToCSV && packetIn != nil {
+		if packetIn != nil {
 			select {
 			case packetIn <- packet:
 			default:
@@ -53,6 +53,10 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet, WritePacke
 			log.Printf("Dropped packet (invalid network layer type %s)\n", netLayer.LayerType())
 		}
 	}
+}
+
+func (c *Capture) SetHandleBPFFilter(filter string) error {
+	return c.Handle.SetBPFFilter(filter)
 }
 
 func GetInterfaceIPv4(deviceName string) (net.IP, error) {

@@ -44,11 +44,10 @@ func AppendPacketToCSV(writer *csv.Writer, packet gopacket.Packet) error {
 	return writer.Write(NewPacketRecord(packet).ToStringArray())
 }
 
-func StreamToCSV(packetOut <-chan gopacket.Packet, filename string) {
+func StreamToCSV(shutDown *util.ShutdownContext, packetOut <-chan gopacket.Packet, filename string) {
 	var file *os.File
 	var err error
 
-	shutDown := util.GetShutDownCtx()
 	fileExists, _ := util.FileExists(filename)
 
 	if fileExists {
@@ -90,7 +89,7 @@ func StreamToCSV(packetOut <-chan gopacket.Packet, filename string) {
 
 func NewPacketRecord(packet gopacket.Packet) PacketRecord {
 	r := PacketRecord{
-		Timestamp: packet.Metadata().Timestamp.UnixMilli(),
+		Timestamp: packet.Metadata().Timestamp.Unix(),
 		Length:    int32(packet.Metadata().Length),
 	}
 

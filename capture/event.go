@@ -1,9 +1,9 @@
 package capture
 
 import (
+	"fmt"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"log"
 	"net"
 )
 
@@ -24,8 +24,7 @@ func NewEvent(size int, srcIP, dstIP net.IP) Event {
 func NewEventFromPacket(packet gopacket.Packet) Event {
 	var srcIP, dstIP net.IP
 
-	netLayer := packet.NetworkLayer()
-	switch layer := netLayer.(type) {
+	switch layer := packet.NetworkLayer().(type) {
 	case *layers.IPv4:
 		srcIP = layer.SrcIP
 		dstIP = layer.DstIP
@@ -34,12 +33,7 @@ func NewEventFromPacket(packet gopacket.Packet) Event {
 		srcIP = layer.SrcIP[12:16]
 		dstIP = layer.DstIP[12:16]
 	default:
-		log.Println("Unsupported layer type - setting to defaults", packet.NetworkLayer().LayerType())
-		return Event{
-			Size:  20,
-			SrcIP: net.IPv4zero,
-			DstIP: net.IPv4zero,
-		}
+		fmt.Printf("Unknown layer type %s - check if layer type is valid before calling\n", packet.NetworkLayer().LayerType().String())
 	}
 
 	return Event{

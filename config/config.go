@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/joho/godotenv"
-	"log"
 	"networktrafficart/util"
 	"os"
 	"strings"
@@ -26,10 +25,8 @@ type Config struct {
 }
 
 // TODO add handling for missing env values?
-func LoadConfig() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
-	}
+func LoadConfig() error {
+	err := godotenv.Load()
 	config = &Config{
 		Fullscreen:                            util.IsTrueStr(os.Getenv("FULLSCREEN")),
 		EnableMockEventStream:                 util.IsTrueStr(os.Getenv("ENABLE_MOCK_EVENT_STREAM")),
@@ -42,6 +39,7 @@ func LoadConfig() {
 		PacketCaptureFilter:                   strings.TrimSpace(os.Getenv("PACKET_CAPTURE_FILTER")),
 		ParticleBufferConsumerAggressionCurve: util.ParseToFloat(os.Getenv("PARTICLE_BUFFER_CONSUMER_AGGRESSION_CURVE")),
 	}
+	return err
 }
 
 func GetConfig() *Config {

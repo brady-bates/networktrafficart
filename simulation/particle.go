@@ -12,6 +12,12 @@ import (
 
 const (
 	offScreenSpawnDistance = 25.0
+	maxIPv4Bits            = math.MaxUint32
+	ySpeed                 = float32(6.0)
+)
+
+var (
+	xSkewIntensity = float32(util.ClampValue(.4, 0.0, 1.0))
 )
 
 type Particle struct {
@@ -24,15 +30,12 @@ type Particle struct {
 
 func NewParticle(e capture.Event, screenWidth, screenHeight int) Particle {
 	rand0to1 := rand.Float32() - .5
-	maxIPv4Bits := math.MaxUint32
 	ip := binary.BigEndian.Uint32(e.SrcIP)
 	packetBits := float32(e.Size)
-	xSkewIntensity := float32(util.ClampValue(.4, 0.0, 1.0))
 	ipRatio := float64(ip) / float64(maxIPv4Bits)
 
 	xStart := float32(ipRatio) * float32(screenWidth)
 	yStart := float32(screenHeight) + offScreenSpawnDistance
-	ySpeed := float32(6.0)
 	xSkew := rand0to1 * xSkewIntensity
 	rgba := ipToRGBA(e.SrcIP)
 	size := float32(util.ClampValue(float64(packetBits/75), 5.0, math.Inf(+1)))

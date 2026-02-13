@@ -19,7 +19,7 @@ type Simulation struct {
 }
 
 func NewSimulation(e chan capture.Event) *Simulation {
-	size := 2500000
+	size := 50000
 	return &Simulation{
 		EventIn:           e,
 		Particles:         []Particle{},
@@ -30,7 +30,7 @@ func NewSimulation(e chan capture.Event) *Simulation {
 }
 
 // TODO add background noise in the lulls, make it low key and natural
-func (s *Simulation) Init(screenWidth, screenHeight int, ParticleBufferConsumerAggressionCurve float64, ParticleBufferConsumerMaxDelayMicros int) {
+func (s *Simulation) Init(screenWidth, screenHeight, ParticleBufferConsumerMaxDelayMicros int, ParticleBufferConsumerAggressionCurve float64) {
 	go s.WatchEventChannel(
 		screenWidth,
 		screenHeight,

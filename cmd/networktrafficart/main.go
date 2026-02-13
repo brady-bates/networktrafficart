@@ -12,13 +12,19 @@ import (
 	"networktrafficart/csv"
 	"networktrafficart/display"
 	"networktrafficart/simulation"
+	"networktrafficart/util"
+)
+
+const (
+	title             = "Network Traffic Art"
+	captureDeviceName = "en0" // TODO add logic to get the best device to capture with
 )
 
 func main() {
-	config.LoadConfig()
+	if err := config.LoadConfig(); err != nil {
+		log.Fatal(err)
+	}
 	conf := config.GetConfig()
-
-	captureDeviceName := "en0" // TODO add logic to get the best device to capture with
 
 	capt, err := capture.NewCaptureProvider(captureDeviceName)
 	if err != nil {
@@ -32,7 +38,7 @@ func main() {
 		}
 
 		filter := fmt.Sprintf("%s %s", conf.PacketCaptureFilter, ipv4.String())
-		if err = capt.Handle.SetBPFFilter(filter); err != nil {
+		if err = capt.SetHandleBPFFilter(filter); err != nil {
 			log.Println("Failed to set packet filter ", err)
 		}
 	}
@@ -40,10 +46,10 @@ func main() {
 	var csvWriterIn chan gopacket.Packet
 	if conf.WritePacketsToCSV {
 		csvWriterIn = make(chan gopacket.Packet)
-		go csv.StreamToCSV(csvWriterIn, conf.CsvName)
+		go csv.StreamToCSV(util.GetShutDownCtx(), csvWriterIn, conf.CsvName)
 	}
 
-	go capt.StartPacketCapture(csvWriterIn, conf.WritePacketsToCSV)
+	go capt.StartPacketCapture(csvWriterIn)
 
 	if conf.EnableMockEventStream {
 		go mockeventstream.Init(capt, conf.MockEventStreamDelayMicros, conf.MockEventBatchSize)
@@ -53,14 +59,14 @@ func main() {
 	disp := display.NewDisplay(sim)
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	ebiten.SetWindowTitle("NetworkTrafficArt")
+	ebiten.SetWindowTitle(title)
 	ebiten.SetFullscreen(conf.Fullscreen)
 
 	sim.Init(
 		disp.ScreenWidth,
 		disp.ScreenHeight,
-		conf.ParticleBufferConsumerAggressionCurve,
 		conf.ParticleBufferConsumerMaxDelayMicros,
+		conf.ParticleBufferConsumerAggressionCurve,
 	)
 	if err = ebiten.RunGame(disp); err != nil {
 		log.Fatal(err)
