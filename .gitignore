@@ -1,8 +1,10 @@
+# IDE/Environemt
 /.idea/
 *.iml
 
-
+# Project
 /duckdb/
 **.db
 **.csv
 .env
+assets/map/map.geojson
