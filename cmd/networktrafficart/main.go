@@ -26,7 +26,12 @@ func main() {
 	}
 	conf := config.GetConfig()
 
-	capt, err := capture.NewCaptureProvider(captureDeviceName)
+	subnet, err := capture.GetIPv4SubnetRange()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	capt, err := capture.NewCaptureProvider(captureDeviceName, subnet)
 	if err != nil {
 		log.Fatal(err)
 	}

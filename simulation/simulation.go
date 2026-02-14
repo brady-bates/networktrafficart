@@ -97,7 +97,7 @@ func (s *Simulation) WatchEventChannel(screenWidth, screenHeight int) {
 		}
 
 		select {
-		case s.particleBuffer <- NewParticle(event, screenWidth, screenHeight):
+		case s.particleBuffer <- NewParticleFromEvent(event, screenWidth, screenHeight):
 		default:
 			fmt.Println("Particle buffer is full")
 		}

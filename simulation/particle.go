@@ -13,7 +13,7 @@ import (
 const (
 	offScreenSpawnDistance = 25.0
 	maxIPv4Bits            = math.MaxUint32
-	ySpeed                 = float32(6.0)
+	speed                  = float32(6.0)
 )
 
 var (
@@ -28,14 +28,24 @@ type Particle struct {
 	Size   float32
 }
 
-func NewParticle(e capture.Event, screenWidth, screenHeight int) Particle {
+func NewParticleFromEvent(e capture.Event, screenWidth, screenHeight int) Particle {
 	rand0to1 := rand.Float32() - .5
 	ip := binary.BigEndian.Uint32(e.SrcIP)
 	packetBits := float32(e.Size)
 	ipRatio := float64(ip) / float64(maxIPv4Bits)
 
 	xStart := float32(ipRatio) * float32(screenWidth)
-	yStart := float32(screenHeight) + offScreenSpawnDistance
+	var yStart float32
+	var ySpeed float32
+	if e.IsInbound {
+		// Inbound - bottom to top
+		yStart = float32(screenHeight) + offScreenSpawnDistance
+		ySpeed = speed
+	} else {
+		// Outbound - top to bottom
+		yStart = -offScreenSpawnDistance
+		ySpeed = -speed
+	}
 	xSkew := rand0to1 * xSkewIntensity
 	rgba := ipToRGBA(e.SrcIP)
 	size := float32(util.ClampValue(float64(packetBits/75), 5.0, math.Inf(+1)))

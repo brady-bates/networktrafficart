@@ -9,11 +9,12 @@ import (
 )
 
 type Capture struct {
-	Handle *pcap.Handle
-	Events chan Event
+	Handle      *pcap.Handle
+	Events      chan Event
+	localSubnet *net.IPNet
 }
 
-func NewCaptureProvider(deviceName string) (*Capture, error) {
+func NewCaptureProvider(deviceName string, subnet *net.IPNet) (*Capture, error) {
 	handle, err := pcap.OpenLive(deviceName, 65536, true, pcap.BlockForever)
 	if err != nil {
 		return nil, err
@@ -21,15 +22,15 @@ func NewCaptureProvider(deviceName string) (*Capture, error) {
 
 	bufferLen := 50000
 	return &Capture{
-		Handle: handle,
-		Events: make(chan Event, bufferLen),
+		Handle:      handle,
+		Events:      make(chan Event, bufferLen),
+		localSubnet: subnet,
 	}, nil
 }
 
 func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet) {
 	source := gopacket.NewPacketSource(c.Handle, c.Handle.LinkType())
 
-	var netLayer gopacket.Layer
 	for packet := range source.Packets() {
 		if packetIn != nil {
 			select {
@@ -38,19 +39,18 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet) {
 			}
 		}
 
-		netLayer = packet.NetworkLayer()
-		if netLayer == nil {
+		if packet.NetworkLayer() == nil {
 			continue
 		}
 
-		if IsValidLayerType(netLayer.LayerType()) { // TODO update this to get ipv6 packets as well
+		if IsValidLayerType(packet.NetworkLayer().LayerType()) { // TODO update this to get ipv6 packets as well
 			select {
-			case c.Events <- NewEventFromPacket(packet):
+			case c.Events <- NewEventFromPacket(packet, c.localSubnet):
 			default:
 				log.Println("Dropped packet (channel full)")
 			}
 		} else {
-			log.Printf("Dropped packet (invalid network layer type %s)\n", netLayer.LayerType())
+			log.Fatalf("Dropped packet (invalid network layer type %s)\n", packet.NetworkLayer().LayerType())
 		}
 	}
 }
@@ -78,4 +78,27 @@ func GetInterfaceIPv4(deviceName string) (net.IP, error) {
 	}
 
 	return nil, fmt.Errorf("device %s not found", deviceName)
+}
+
+func GetIPv4SubnetRange() (*net.IPNet, error) {
+	devices, err := pcap.FindAllDevs()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, device := range devices {
+		for _, address := range device.Addresses {
+			if address.IP == nil || address.IP.IsLoopback() || address.IP.To4() == nil {
+				continue
+			}
+
+			ipNet := &net.IPNet{
+				IP:   address.IP.Mask(address.Netmask),
+				Mask: address.Netmask,
+			}
+			return ipNet, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not find any IPv4 addresses")
 }
