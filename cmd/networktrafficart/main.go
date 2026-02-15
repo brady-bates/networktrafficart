@@ -11,6 +11,8 @@ import (
 	"networktrafficart/internal/config"
 	"networktrafficart/internal/csv"
 	"networktrafficart/internal/display"
+	"networktrafficart/internal/geo"
+	_map "networktrafficart/internal/map"
 	"networktrafficart/internal/simulation"
 	"networktrafficart/internal/util"
 )
@@ -61,10 +63,13 @@ func main() {
 	}
 
 	sim := simulation.NewSimulation(capt.Events)
-	disp := display.NewDisplay(sim)
+	geoData := _map.LoadGeoJSON("assets/map/map.geojson")
+	geoService := geo.NewGeoService("assets/geolitedb/GeoLite2-City.mmdb")
+	disp := display.NewDisplay(sim, geoData, geoService)
 
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowTitle(title)
+	ebiten.SetWindowSize(disp.ScreenWidth, disp.ScreenHeight)
 	ebiten.SetFullscreen(conf.Fullscreen)
 
 	sim.Init(
