@@ -7,7 +7,12 @@ import (
 	"os"
 )
 
-func LoadGeoJSON(path string) ([]*geojson.Feature, orb.Bound) {
+type GeoJsonData struct {
+	Features  []*geojson.Feature
+	MapBounds orb.Bound
+}
+
+func LoadGeoJSON(path string) GeoJsonData {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		log.Fatal(err)
@@ -48,7 +53,7 @@ func LoadGeoJSON(path string) ([]*geojson.Feature, orb.Bound) {
 		bound.Max[1] = 85.05112
 	}
 
-	return fc.Features, bound
+	return GeoJsonData{fc.Features, bound}
 }
 
 func expandBound(bound *orb.Bound, b orb.Bound) {
