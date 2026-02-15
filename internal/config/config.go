@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/joho/godotenv"
-	"networktrafficart/util"
+	"networktrafficart/internal/util"
 	"os"
 	"strings"
 )

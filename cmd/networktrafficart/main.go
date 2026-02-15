@@ -6,13 +6,13 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"log"
 	"net"
-	"networktrafficart/capture"
-	"networktrafficart/capture/mockeventstream"
-	"networktrafficart/config"
-	"networktrafficart/csv"
-	"networktrafficart/display"
-	"networktrafficart/simulation"
-	"networktrafficart/util"
+	"networktrafficart/internal/capture"
+	"networktrafficart/internal/capture/mockeventstream"
+	"networktrafficart/internal/config"
+	"networktrafficart/internal/csv"
+	"networktrafficart/internal/display"
+	"networktrafficart/internal/simulation"
+	"networktrafficart/internal/util"
 )
 
 const (

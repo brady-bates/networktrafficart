@@ -6,7 +6,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"log"
-	"networktrafficart/util"
+	util2 "networktrafficart/internal/util"
 	"os"
 	"reflect"
 )
@@ -44,11 +44,11 @@ func AppendPacketToCSV(writer *csv.Writer, packet gopacket.Packet) error {
 	return writer.Write(NewPacketRecord(packet).ToStringArray())
 }
 
-func StreamToCSV(shutDown *util.ShutdownContext, packetOut <-chan gopacket.Packet, filename string) {
+func StreamToCSV(shutDown *util2.ShutdownContext, packetOut <-chan gopacket.Packet, filename string) {
 	var file *os.File
 	var err error
 
-	fileExists, _ := util.FileExists(filename)
+	fileExists, _ := util2.FileExists(filename)
 
 	if fileExists {
 		if file, err = os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0644); err != nil {

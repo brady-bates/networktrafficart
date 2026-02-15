@@ -6,8 +6,8 @@ import (
 	"math"
 	"math/rand"
 	"net"
-	"networktrafficart/capture"
-	"networktrafficart/util"
+	"networktrafficart/internal/capture"
+	"networktrafficart/internal/util"
 )
 
 const (

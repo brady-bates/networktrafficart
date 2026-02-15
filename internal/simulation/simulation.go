@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"math"
-	"networktrafficart/capture"
-	"networktrafficart/util"
+	"networktrafficart/internal/capture"
+	"networktrafficart/internal/util"
 	"sync"
 	"time"
 )

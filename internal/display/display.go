@@ -6,8 +6,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"image/color"
 	"log"
-	"networktrafficart/simulation"
-	"networktrafficart/util"
+	"networktrafficart/internal/simulation"
+	"networktrafficart/internal/util"
 )
 
 const (

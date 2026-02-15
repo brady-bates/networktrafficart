@@ -5,9 +5,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"image/color"
 	"log"
-	"networktrafficart/geo"
-	_map "networktrafficart/map"
-	"networktrafficart/util"
+	"networktrafficart/internal/geo"
+	_map2 "networktrafficart/internal/map"
+	"networktrafficart/internal/util"
 )
 
 const (
@@ -21,13 +21,13 @@ var (
 )
 
 type Game struct {
-	geoJsonData   _map.GeoJsonData
+	geoJsonData   _map2.GeoJsonData
 	mapProjection *ebiten.Image
 	geoService    geo.GeoService
 }
 
 func main() {
-	geoData := _map.LoadGeoJSON("assets/map/map.geojson")
+	geoData := _map2.LoadGeoJSON("assets/map/map.geojson")
 	geoService := geo.NewGeoService("assets/geolitedb/GeoLite2-City.mmdb")
 	g := NewGame(geoData, geoService)
 	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
@@ -38,7 +38,7 @@ func main() {
 	}
 }
 
-func NewGame(geoData _map.GeoJsonData, geoService geo.GeoService) *Game {
+func NewGame(geoData _map2.GeoJsonData, geoService geo.GeoService) *Game {
 	return &Game{
 		geoJsonData:   geoData,
 		mapProjection: nil,
@@ -48,7 +48,7 @@ func NewGame(geoData _map.GeoJsonData, geoService geo.GeoService) *Game {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	if g.mapProjection == nil {
-		g.mapProjection = _map.DrawMap(g.geoJsonData.MapBounds, g.geoJsonData.Features, ebiten.NewImage(ScreenWidth, ScreenHeight))
+		g.mapProjection = _map2.DrawMap(g.geoJsonData.MapBounds, g.geoJsonData.Features, ebiten.NewImage(ScreenWidth, ScreenHeight))
 	}
 
 	ip := util.GenerateRandomIPv4()
@@ -60,7 +60,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	circleImg := ebiten.NewImage(100, 100)
 	vector.FillCircle(circleImg, 3, 3, 3, color.White, true)
 
-	x, y := _map.Project(g.geoJsonData.MapBounds, city.Location.Longitude, city.Location.Latitude)
+	x, y := _map2.Project(g.geoJsonData.MapBounds, city.Location.Longitude, city.Location.Latitude)
 	opts := &ebiten.DrawImageOptions{}
 	opts.GeoM.Translate(x, y)
 
