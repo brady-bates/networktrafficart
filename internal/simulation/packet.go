@@ -20,7 +20,7 @@ var (
 	xSkewIntensity = float32(util.ClampValue(.4, 0.0, 1.0))
 )
 
-type Particle struct {
+type Packet struct {
 	X, Y   float32
 	YDelta float32
 	XSkew  float32
@@ -28,7 +28,7 @@ type Particle struct {
 	Size   float32
 }
 
-func NewParticleFromEvent(e capture.Event, screenWidth, screenHeight int) Particle {
+func NewParticleFromEvent(e capture.PacketData, screenWidth, screenHeight int) Packet {
 	rand0to1 := rand.Float32() - .5
 	ip := binary.BigEndian.Uint32(e.SrcIP)
 	packetBits := float32(e.Size)
@@ -50,7 +50,7 @@ func NewParticleFromEvent(e capture.Event, screenWidth, screenHeight int) Partic
 	rgba := ipToRGBA(e.SrcIP)
 	size := float32(util.ClampValue(float64(packetBits/75), 5.0, math.Inf(+1)))
 
-	return Particle{
+	return Packet{
 		xStart,
 		yStart,
 		ySpeed,

@@ -4,6 +4,8 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"image/color"
+	"log"
+	"net"
 	"networktrafficart/internal/geo"
 	_map "networktrafficart/internal/map"
 	"networktrafficart/internal/simulation"
@@ -12,10 +14,6 @@ import (
 
 const (
 	sw, sh = 1920, 1080
-)
-
-var (
-	blue = color.RGBA{R: 0, G: 89, B: 179, A: 255}
 )
 
 type Display struct {
@@ -64,12 +62,24 @@ func (d *Display) Draw(screen *ebiten.Image) {
 		d.mapProjection = _map.DrawMap(d.geoJsonData.MapBounds, d.geoJsonData.Features, ebiten.NewImage(d.ScreenWidth, d.ScreenHeight))
 	}
 
-	//city, err := d.geoService.GetCityFromIP(ip)
+	ip := net.ParseIP("***REMOVED***")
+	city, err := d.geoService.GetCityFromIP(ip)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	d.screenBuffer.Fill(blue)
+	circleImg := ebiten.NewImage(100, 100)
+	vector.FillCircle(circleImg, 3, 3, 3, color.White, true)
+
+	x, y := _map.Project(d.geoJsonData.MapBounds, city.Location.Longitude, city.Location.Latitude)
+	opts := &ebiten.DrawImageOptions{}
+	opts.GeoM.Translate(x, y)
+
+	d.screenBuffer.Fill(_map.OceanColor)
 	d.screenBuffer.DrawImage(d.mapProjection, nil)
 
 	screen.DrawImage(d.screenBuffer, nil)
+	screen.DrawImage(circleImg, opts)
 }
 
 func (d *Display) Layout(w, h int) (int, int) {

@@ -10,7 +10,7 @@ import (
 
 type Capture struct {
 	Handle      *pcap.Handle
-	Events      chan Event
+	Events      chan PacketData
 	localSubnet *net.IPNet
 }
 
@@ -23,7 +23,7 @@ func NewCaptureProvider(deviceName string, subnet *net.IPNet) (*Capture, error) 
 	bufferLen := 50000
 	return &Capture{
 		Handle:      handle,
-		Events:      make(chan Event, bufferLen),
+		Events:      make(chan PacketData, bufferLen),
 		localSubnet: subnet,
 	}, nil
 }
@@ -45,7 +45,7 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet) {
 
 		if IsValidLayerType(packet.NetworkLayer().LayerType()) { // TODO update this to get ipv6 packets as well
 			select {
-			case c.Events <- NewEventFromPacket(packet, c.localSubnet):
+			case c.Events <- NewDataFromPacket(packet, c.localSubnet):
 			default:
 				log.Println("Dropped packet (channel full)")
 			}

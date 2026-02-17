@@ -8,15 +8,15 @@ import (
 	"net"
 )
 
-type Event struct {
+type PacketData struct {
 	Size      int
 	SrcIP     net.IP
 	DstIP     net.IP
 	IsInbound bool
 }
 
-func NewEvent(size int, srcIP, dstIP net.IP) Event {
-	return Event{
+func NewPacketData(size int, srcIP, dstIP net.IP) PacketData {
+	return PacketData{
 		Size:      size,
 		SrcIP:     srcIP,
 		DstIP:     dstIP,
@@ -24,7 +24,7 @@ func NewEvent(size int, srcIP, dstIP net.IP) Event {
 	}
 }
 
-func NewEventFromPacket(packet gopacket.Packet, subnet *net.IPNet) Event {
+func NewDataFromPacket(packet gopacket.Packet, subnet *net.IPNet) PacketData {
 	var srcIP, dstIP net.IP
 
 	// TODO convert or not based on the actual given ip type
@@ -39,7 +39,7 @@ func NewEventFromPacket(packet gopacket.Packet, subnet *net.IPNet) Event {
 		fmt.Printf("Unknown layer type %s - check if layer type is valid before calling\n", packet.NetworkLayer().LayerType().String())
 	}
 
-	return Event{
+	return PacketData{
 		packet.Metadata().Length,
 		srcIP,
 		dstIP,

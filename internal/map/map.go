@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	landmassColor = color.RGBA{R: 128, G: 192, B: 128, A: 255} // green
-	borderColor   = color.RGBA{R: 51, G: 102, B: 51, A: 255}   // darker green
+	landmassColor = color.RGBA{R: 25, G: 40, B: 60, A: 255} // dark slate blue
+	borderColor   = color.RGBA{R: 40, G: 60, B: 90, A: 255} // slightly lighter, very subtle
+	OceanColor    = color.RGBA{R: 8, G: 15, B: 35, A: 255}  // near black navy
 )
 
 func DrawMap(mapBounds orb.Bound, features []*geojson.Feature, screenBuffer *ebiten.Image) *ebiten.Image {
@@ -74,18 +75,18 @@ func DrawPolygon(bounds orb.Bound, screen *ebiten.Image, poly orb.Polygon) {
 		}
 		path.Close()
 
-		fillDraw := &vector.DrawPathOptions{
+		fillOpts := &vector.DrawPathOptions{
 			AntiAlias: true,
 		}
-		fillDraw.ColorScale.ScaleWithColor(landmassColor)
-		vector.FillPath(screen, &path, &vector.FillOptions{}, fillDraw)
+		fillOpts.ColorScale.ScaleWithColor(landmassColor)
+		vector.FillPath(screen, &path, &vector.FillOptions{}, fillOpts)
 
-		strokeDraw := &vector.DrawPathOptions{
+		borderOpts := &vector.DrawPathOptions{
 			AntiAlias: true,
 		}
-		strokeDraw.ColorScale.ScaleWithColor(borderColor)
+		borderOpts.ColorScale.ScaleWithColor(borderColor)
 		vector.StrokePath(screen, &path, &vector.StrokeOptions{
 			Width: 1.0,
-		}, strokeDraw)
+		}, borderOpts)
 	}
 }

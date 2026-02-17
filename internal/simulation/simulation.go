@@ -11,21 +11,21 @@ import (
 )
 
 type Simulation struct {
-	EventIn           chan capture.Event
-	Particles         []Particle
+	EventIn           chan capture.PacketData
+	Particles         []Packet
 	mut               sync.RWMutex
 	OffScreenDistance float32
-	particleBuffer    chan Particle
+	particleBuffer    chan Packet
 }
 
-func NewSimulation(e chan capture.Event) *Simulation {
+func NewSimulation(e chan capture.PacketData) *Simulation {
 	size := 50000
 	return &Simulation{
 		EventIn:           e,
-		Particles:         []Particle{},
+		Particles:         []Packet{},
 		mut:               sync.RWMutex{},
 		OffScreenDistance: 25,
-		particleBuffer:    make(chan Particle, size),
+		particleBuffer:    make(chan Packet, size),
 	}
 }
 
@@ -57,7 +57,7 @@ func (s *Simulation) tickParticles() {
 			s.Particles[n] = p
 			n++
 		} else {
-			s.Particles[n] = Particle{}
+			s.Particles[n] = Packet{}
 		}
 	}
 
@@ -83,14 +83,14 @@ func (s *Simulation) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
 	}
 }
 
-func (s *Simulation) AddToParticles(p Particle) {
+func (s *Simulation) AddToParticles(p Packet) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
 	s.Particles = append(s.Particles, p)
 }
 
 func (s *Simulation) WatchEventChannel(screenWidth, screenHeight int) {
-	var event capture.Event
+	var event capture.PacketData
 	for {
 		select {
 		case event = <-s.EventIn:
@@ -99,7 +99,7 @@ func (s *Simulation) WatchEventChannel(screenWidth, screenHeight int) {
 		select {
 		case s.particleBuffer <- NewParticleFromEvent(event, screenWidth, screenHeight):
 		default:
-			fmt.Println("Particle buffer is full")
+			fmt.Println("Packet buffer is full")
 		}
 	}
 }
@@ -110,7 +110,7 @@ func (s *Simulation) CreateParticlesFromBuffer(aggressionCurve float64, maxWatch
 	minDelay := 0.0
 	maxDelay := float64(maxWatcherDelay)
 
-	var particle Particle
+	var particle Packet
 	for {
 		select {
 		case particle = <-s.particleBuffer:
@@ -126,3 +126,7 @@ func (s *Simulation) CreateParticlesFromBuffer(aggressionCurve float64, maxWatch
 		}
 	}
 }
+
+// TODO find a new visual representation of a packet
+// Packet/trail, leaves a faded trail
+// Arc of some kind, brief fade in and out - dot traveling along arc?
