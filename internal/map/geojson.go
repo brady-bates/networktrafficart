@@ -40,9 +40,9 @@ func LoadGeoJSON(path string) GeoJsonData {
 
 		switch geom := f.Geometry.(type) {
 		case orb.Polygon:
-			expandBound(&bound, geom.Bound())
+			expandBounds(&bound, geom.Bound())
 		case orb.MultiPolygon:
-			expandBound(&bound, geom.Bound())
+			expandBounds(&bound, geom.Bound())
 		}
 	}
 
@@ -56,17 +56,17 @@ func LoadGeoJSON(path string) GeoJsonData {
 	return GeoJsonData{fc.Features, bound}
 }
 
-func expandBound(bound *orb.Bound, b orb.Bound) {
-	if b.Min.Lon() < bound.Min.Lon() {
-		bound.Min[0] = b.Min.Lon()
+func expandBounds(bound *orb.Bound, expandTo orb.Bound) {
+	if expandTo.Min.Lon() < bound.Min.Lon() {
+		bound.Min[0] = expandTo.Min.Lon()
 	}
-	if b.Min.Lat() < bound.Min.Lat() {
-		bound.Min[1] = b.Min.Lat()
+	if expandTo.Min.Lat() < bound.Min.Lat() {
+		bound.Min[1] = expandTo.Min.Lat()
 	}
-	if b.Max.Lon() > bound.Max.Lon() {
-		bound.Max[0] = b.Max.Lon()
+	if expandTo.Max.Lon() > bound.Max.Lon() {
+		bound.Max[0] = expandTo.Max.Lon()
 	}
-	if b.Max.Lat() > bound.Max.Lat() {
-		bound.Max[1] = b.Max.Lat()
+	if expandTo.Max.Lat() > bound.Max.Lat() {
+		bound.Max[1] = expandTo.Max.Lat()
 	}
 }

@@ -1,4 +1,4 @@
-package mockeventstream
+package mockdatastream
 
 import (
 	"networktrafficart/internal/capture"

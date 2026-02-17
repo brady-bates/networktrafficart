@@ -4,7 +4,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/geojson"
 	"image/color"
 	"math"
 )
@@ -15,14 +14,14 @@ var (
 	OceanColor    = color.RGBA{R: 8, G: 15, B: 35, A: 255}  // near black navy
 )
 
-func DrawMap(mapBounds orb.Bound, features []*geojson.Feature, screenBuffer *ebiten.Image) *ebiten.Image {
-	for _, f := range features {
+func DrawMap(data GeoJsonData, screenBuffer *ebiten.Image) *ebiten.Image {
+	for _, f := range data.Features {
 		switch geom := f.Geometry.(type) {
 		case orb.Polygon:
-			DrawPolygon(mapBounds, screenBuffer, geom)
+			DrawPolygon(data.MapBounds, screenBuffer, geom)
 		case orb.MultiPolygon:
 			for _, poly := range geom {
-				DrawPolygon(mapBounds, screenBuffer, poly)
+				DrawPolygon(data.MapBounds, screenBuffer, poly)
 			}
 		}
 	}

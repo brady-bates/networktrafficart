@@ -59,7 +59,7 @@ func (d *Display) Update() error {
 
 func (d *Display) Draw(screen *ebiten.Image) {
 	if d.mapProjection == nil {
-		d.mapProjection = _map.DrawMap(d.geoJsonData.MapBounds, d.geoJsonData.Features, ebiten.NewImage(d.ScreenWidth, d.ScreenHeight))
+		d.mapProjection = _map.DrawMap(d.geoJsonData, ebiten.NewImage(d.ScreenWidth, d.ScreenHeight))
 	}
 
 	ip := net.ParseIP("***REMOVED***")
