@@ -75,8 +75,8 @@ func main() {
 	sim.Init(
 		disp.ScreenWidth,
 		disp.ScreenHeight,
-		conf.ParticleBufferConsumerMaxDelayMicros,
-		conf.ParticleBufferConsumerAggressionCurve,
+		conf.PacketBufferConsumerMaxDelayMicros,
+		conf.PacketBufferConsumerAggressionCurve,
 	)
 	if err = ebiten.RunGame(disp); err != nil {
 		log.Fatal(err)

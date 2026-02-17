@@ -62,7 +62,7 @@ func (d *Display) Draw(screen *ebiten.Image) {
 		d.mapProjection = _map.DrawMap(d.geoJsonData, ebiten.NewImage(d.ScreenWidth, d.ScreenHeight))
 	}
 
-	ip := net.ParseIP("***REMOVED***")
+	ip := net.ParseIP("8.8.8.8")
 	city, err := d.geoService.GetCityFromIP(ip)
 	if err != nil {
 		log.Fatal(err)

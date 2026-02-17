@@ -12,64 +12,63 @@ import (
 
 type Simulation struct {
 	EventIn           chan capture.PacketData
-	Particles         []Packet
+	Packets           []Packet
 	mut               sync.RWMutex
 	OffScreenDistance float32
-	particleBuffer    chan Packet
+	packetBuffer      chan Packet
 }
 
 func NewSimulation(e chan capture.PacketData) *Simulation {
-	size := 50000
 	return &Simulation{
 		EventIn:           e,
-		Particles:         []Packet{},
+		Packets:           []Packet{},
 		mut:               sync.RWMutex{},
 		OffScreenDistance: 25,
-		particleBuffer:    make(chan Packet, size),
+		packetBuffer:      make(chan Packet, 50000),
 	}
 }
 
 // TODO add background noise in the lulls, make it low key and natural
-func (s *Simulation) Init(screenWidth, screenHeight, ParticleBufferConsumerMaxDelayMicros int, ParticleBufferConsumerAggressionCurve float64) {
+func (s *Simulation) Init(screenWidth, screenHeight, PacketBufferConsumerMaxDelayMicros int, PacketBufferConsumerAggressionCurve float64) {
 	go s.WatchEventChannel(
 		screenWidth,
 		screenHeight,
 	)
-	go s.CreateParticlesFromBuffer(
-		ParticleBufferConsumerAggressionCurve,
-		ParticleBufferConsumerMaxDelayMicros,
+	go s.CreatePacketsFromBuffer(
+		PacketBufferConsumerAggressionCurve,
+		PacketBufferConsumerMaxDelayMicros,
 	)
 }
 
 func (s *Simulation) Tick() {
 	s.mut.Lock()
 	defer s.mut.Unlock()
-	s.tickParticles()
+	s.tickPackets()
 }
 
-func (s *Simulation) tickParticles() {
+func (s *Simulation) tickPackets() {
 	var n int
-	for _, p := range s.Particles {
+	for _, p := range s.Packets {
 		p.Y -= p.YDelta
 		p.X += p.XSkew
 
 		if p.Y >= -s.OffScreenDistance {
-			s.Particles[n] = p
+			s.Packets[n] = p
 			n++
 		} else {
-			s.Particles[n] = Packet{}
+			s.Packets[n] = Packet{}
 		}
 	}
 
-	clear(s.Particles[n:])
-	s.Particles = s.Particles[:n]
+	clear(s.Packets[n:])
+	s.Packets = s.Packets[:n]
 }
 
-func (s *Simulation) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
+func (s *Simulation) DrawPackets(screen *ebiten.Image, circle *ebiten.Image) {
 	s.mut.RLock()
 	defer s.mut.RUnlock()
 	opts := &ebiten.DrawImageOptions{}
-	for _, p := range s.Particles {
+	for _, p := range s.Packets {
 		opts.GeoM.Reset()
 		opts.ColorScale.Reset()
 
@@ -83,10 +82,10 @@ func (s *Simulation) DrawParticles(screen *ebiten.Image, circle *ebiten.Image) {
 	}
 }
 
-func (s *Simulation) AddToParticles(p Packet) {
+func (s *Simulation) AddToPackets(p Packet) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
-	s.Particles = append(s.Particles, p)
+	s.Packets = append(s.Packets, p)
 }
 
 func (s *Simulation) WatchEventChannel(screenWidth, screenHeight int) {
@@ -97,30 +96,30 @@ func (s *Simulation) WatchEventChannel(screenWidth, screenHeight int) {
 		}
 
 		select {
-		case s.particleBuffer <- NewParticleFromEvent(event, screenWidth, screenHeight):
+		case s.packetBuffer <- NewPacketFromEvent(event, screenWidth, screenHeight):
 		default:
 			fmt.Println("Packet buffer is full")
 		}
 	}
 }
 
-func (s *Simulation) CreateParticlesFromBuffer(aggressionCurve float64, maxWatcherDelay int) {
+func (s *Simulation) CreatePacketsFromBuffer(aggressionCurve float64, maxWatcherDelay int) {
 	curve := util.ClampValue(aggressionCurve, 0.0, math.Inf(+1))
-	capacity := float64(cap(s.particleBuffer))
+	capacity := float64(cap(s.packetBuffer))
 	minDelay := 0.0
 	maxDelay := float64(maxWatcherDelay)
 
-	var particle Packet
+	var packet Packet
 	for {
 		select {
-		case particle = <-s.particleBuffer:
-			count := float64(len(s.particleBuffer))
+		case packet = <-s.packetBuffer:
+			count := float64(len(s.packetBuffer))
 			fullness := count / (capacity * .6)
 			modulationFactor := math.Pow(fullness, curve)
 			modulatedDelay := maxDelay + modulationFactor*(minDelay-maxDelay)
 			micro := time.Duration(modulatedDelay) * time.Microsecond
 
-			s.AddToParticles(particle)
+			s.AddToPackets(packet)
 
 			time.Sleep(micro)
 		}

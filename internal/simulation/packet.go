@@ -28,7 +28,7 @@ type Packet struct {
 	Size   float32
 }
 
-func NewParticleFromEvent(e capture.PacketData, screenWidth, screenHeight int) Packet {
+func NewPacketFromEvent(e capture.PacketData, screenWidth, screenHeight int) Packet {
 	rand0to1 := rand.Float32() - .5
 	ip := binary.BigEndian.Uint32(e.SrcIP)
 	packetBits := float32(e.Size)

@@ -43,7 +43,7 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet) {
 			continue
 		}
 
-		if IsValidLayerType(packet.NetworkLayer().LayerType()) { // TODO update this to get ipv6 packets as well
+		if IsValidLayerType(packet.NetworkLayer().LayerType()) {
 			select {
 			case c.Events <- NewDataFromPacket(packet, c.localSubnet):
 			default:
