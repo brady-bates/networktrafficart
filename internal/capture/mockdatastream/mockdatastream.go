@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-func Init(c *capture.Capture, delayMicros int, batchSize int) {
+func Init(events chan capture.PacketData, delayMicros int, batchSize int) {
 	micro := time.Duration(delayMicros) * time.Microsecond
 	for {
 		for range batchSize {
 			select {
-			case c.Events <- capture.NewPacketData(500, util.GenerateRandomIPv4(), util.GenerateRandomIPv4()):
+			case events <- capture.NewPacketData(500, util.GenerateRandomIPv4(), util.GenerateRandomIPv4()):
 			default:
 			}
 		}
