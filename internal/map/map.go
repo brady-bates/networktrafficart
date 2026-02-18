@@ -18,10 +18,10 @@ func DrawMap(data GeoJsonData, screenBuffer *ebiten.Image) *ebiten.Image {
 	for _, f := range data.Features {
 		switch geom := f.Geometry.(type) {
 		case orb.Polygon:
-			DrawPolygon(data.MapBounds, screenBuffer, geom)
+			drawPolygon(data.MapBounds, screenBuffer, geom)
 		case orb.MultiPolygon:
 			for _, poly := range geom {
-				DrawPolygon(data.MapBounds, screenBuffer, poly)
+				drawPolygon(data.MapBounds, screenBuffer, poly)
 			}
 		}
 	}
@@ -56,7 +56,7 @@ func translateToMercator(latDeg float64) float64 {
 	return math.Log(math.Tan(math.Pi/4 + r/2))
 }
 
-func DrawPolygon(bounds orb.Bound, screen *ebiten.Image, poly orb.Polygon) {
+func drawPolygon(bounds orb.Bound, screen *ebiten.Image, poly orb.Polygon) {
 	for _, ring := range poly {
 		// skip undrawable polygons
 		if len(ring) < 2 {

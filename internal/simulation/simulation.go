@@ -11,7 +11,7 @@ import (
 )
 
 type Simulation struct {
-	EventIn           chan capture.PacketData
+	Events            chan capture.PacketData
 	Packets           []Packet
 	mut               sync.RWMutex
 	OffScreenDistance float32
@@ -20,7 +20,7 @@ type Simulation struct {
 
 func NewSimulation(e chan capture.PacketData) *Simulation {
 	return &Simulation{
-		EventIn:           e,
+		Events:            e,
 		Packets:           []Packet{},
 		mut:               sync.RWMutex{},
 		OffScreenDistance: 25,
@@ -28,7 +28,6 @@ func NewSimulation(e chan capture.PacketData) *Simulation {
 	}
 }
 
-// TODO add background noise in the lulls, make it low key and natural
 func (s *Simulation) Init(screenWidth, screenHeight, PacketBufferConsumerMaxDelayMicros int, PacketBufferConsumerAggressionCurve float64) {
 	go s.WatchEventChannel(
 		screenWidth,
@@ -92,7 +91,7 @@ func (s *Simulation) WatchEventChannel(screenWidth, screenHeight int) {
 	var event capture.PacketData
 	for {
 		select {
-		case event = <-s.EventIn:
+		case event = <-s.Events:
 		}
 
 		select {

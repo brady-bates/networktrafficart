@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/google/gopacket"
+	"github.com/google/gopacket/pcap"
 	"github.com/hajimehoshi/ebiten/v2"
 	"log"
 	"net"
@@ -33,10 +34,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	capt, err := capture.NewCaptureProvider(captureDeviceName, subnet)
+	handle, err := pcap.OpenLive(captureDeviceName, 65536, true, pcap.BlockForever)
 	if err != nil {
 		log.Fatal(err)
 	}
+	capt := capture.NewCaptureProvider(handle, subnet)
 
 	if conf.EnablePacketCaptureFilter {
 		var ipv4 net.IP

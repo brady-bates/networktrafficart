@@ -14,18 +14,12 @@ type Capture struct {
 	localSubnet *net.IPNet
 }
 
-func NewCaptureProvider(deviceName string, subnet *net.IPNet) (*Capture, error) {
-	handle, err := pcap.OpenLive(deviceName, 65536, true, pcap.BlockForever)
-	if err != nil {
-		return nil, err
-	}
-
-	bufferLen := 50000
+func NewCaptureProvider(handle *pcap.Handle, subnet *net.IPNet) *Capture {
 	return &Capture{
 		Handle:      handle,
-		Events:      make(chan PacketData, bufferLen),
+		Events:      make(chan PacketData, 50000),
 		localSubnet: subnet,
-	}, nil
+	}
 }
 
 func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet) {

@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	sw, sh = 1920, 1080
+	screenWidth, screenHeight = 1920, 1080
 )
 
 type Display struct {
-	Simulation      *simulation.Simulation
+	simulation      *simulation.Simulation
 	ScreenWidth     int
 	ScreenHeight    int
 	baseCircleImage *ebiten.Image
@@ -32,11 +32,11 @@ func NewDisplay(s *simulation.Simulation, geoData _map.GeoJsonData, geoService g
 	vector.FillCircle(circleImage, 50, 50, 50, color.White, true)
 
 	return &Display{
-		Simulation:      s,
-		ScreenWidth:     sw,
-		ScreenHeight:    sh,
+		simulation:      s,
+		ScreenWidth:     screenWidth,
+		ScreenHeight:    screenHeight,
 		baseCircleImage: circleImage,
-		screenBuffer:    ebiten.NewImage(sw, sh),
+		screenBuffer:    ebiten.NewImage(screenWidth, screenHeight),
 		geoJsonData:     geoData,
 		geoService:      geoService,
 		mapProjection:   nil,
@@ -53,7 +53,7 @@ func (d *Display) Update() error {
 		return ebiten.Termination
 	}
 
-	d.Simulation.Tick()
+	d.simulation.Tick()
 	return nil
 }
 
