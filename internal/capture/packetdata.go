@@ -9,18 +9,16 @@ import (
 )
 
 type PacketData struct {
-	Size      int
-	SrcIP     net.IP
-	DstIP     net.IP
-	IsInbound bool
+	SrcIP      net.IP
+	DstIP      net.IP
+	IsIncoming bool
 }
 
-func NewPacketData(size int, srcIP, dstIP net.IP) PacketData {
+func NewPacketData(srcIP, dstIP net.IP) PacketData {
 	return PacketData{
-		Size:      size,
-		SrcIP:     srcIP,
-		DstIP:     dstIP,
-		IsInbound: rand.Intn(2) == 1,
+		SrcIP:      srcIP,
+		DstIP:      dstIP,
+		IsIncoming: rand.Intn(2) == 1,
 	}
 }
 
@@ -40,7 +38,6 @@ func NewDataFromPacket(packet gopacket.Packet, subnet *net.IPNet) PacketData {
 	}
 
 	return PacketData{
-		packet.Metadata().Length,
 		srcIP,
 		dstIP,
 		subnet.Contains(dstIP),
