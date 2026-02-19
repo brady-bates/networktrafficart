@@ -25,19 +25,17 @@ type Packet struct {
 	YDelta float32
 	XSkew  float32
 	Color  color.RGBA
-	Size   float32
 }
 
 func NewPacketFromEvent(e capture.PacketData, screenWidth, screenHeight int) Packet {
 	rand0to1 := rand.Float32() - .5
 	ip := binary.BigEndian.Uint32(e.SrcIP)
-	packetBits := float32(e.Size)
 	ipRatio := float64(ip) / float64(maxIPv4Bits)
 
 	xStart := float32(ipRatio) * float32(screenWidth)
 	var yStart float32
 	var ySpeed float32
-	if e.IsInbound {
+	if e.IsIncoming {
 		// Inbound - bottom to top
 		yStart = float32(screenHeight) + offScreenSpawnDistance
 		ySpeed = speed
@@ -48,7 +46,6 @@ func NewPacketFromEvent(e capture.PacketData, screenWidth, screenHeight int) Pac
 	}
 	xSkew := rand0to1 * xSkewIntensity
 	rgba := ipToRGBA(e.SrcIP)
-	size := float32(util.ClampValue(float64(packetBits/75), 5.0, math.Inf(+1)))
 
 	return Packet{
 		xStart,
@@ -56,7 +53,6 @@ func NewPacketFromEvent(e capture.PacketData, screenWidth, screenHeight int) Pac
 		ySpeed,
 		xSkew,
 		rgba,
-		size,
 	}
 }
 

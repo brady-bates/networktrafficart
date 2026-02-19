@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func Init(events chan capture.PacketData, delayMicros int, batchSize int) {
+func Start(events chan capture.PacketData, delayMicros int, batchSize int) {
 	micro := time.Duration(delayMicros) * time.Microsecond
 	for {
 		for range batchSize {

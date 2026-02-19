@@ -61,7 +61,7 @@ func main() {
 	go capt.StartPacketCapture(csvWriterIn)
 
 	if conf.EnableMockEventStream {
-		go mockdatastream.Init(capt.Events, conf.MockEventStreamDelayMicros, conf.MockEventBatchSize)
+		go mockdatastream.Start(capt.Events, conf.MockEventStreamDelayMicros, conf.MockEventBatchSize)
 	}
 
 	sim := simulation.NewSimulation(capt.Events)
