@@ -25,15 +25,15 @@ func openGeoIPDB(dbpath string) *geoip2.Reader {
 	return geodb
 }
 
-func (g *GeoService) GetCityFromIP(ip net.IP) (*geoip2.City, error) {
+func (g *GeoService) LongLatFromIP(ip net.IP) (float64, float64, error) {
 	city, err := g.geoipDB.City(ip)
 	if err != nil {
-		return nil, err
+		return 0, 0, err
 	}
 
 	if city == nil {
-		return nil, fmt.Errorf("city not found for %s", ip.String())
+		return 0, 0, fmt.Errorf("city not found for %s", ip.String())
 	}
 
-	return city, nil
+	return city.Location.Longitude, city.Location.Latitude, nil
 }

@@ -28,8 +28,8 @@ func NewDataFromPacket(packet gopacket.Packet, subnet *net.IPNet) PacketData {
 	// TODO improve handling of IPv6 rather "normalizing" to IPv4
 	switch layer := packet.NetworkLayer().(type) {
 	case *layers.IPv4:
-		srcIP = normalizeIP(layer.SrcIP)
-		dstIP = normalizeIP(layer.DstIP)
+		srcIP = layer.SrcIP
+		dstIP = layer.DstIP
 	case *layers.IPv6:
 		srcIP = normalizeIP(layer.SrcIP)
 		dstIP = normalizeIP(layer.DstIP)
@@ -44,10 +44,9 @@ func NewDataFromPacket(packet gopacket.Packet, subnet *net.IPNet) PacketData {
 	}
 }
 
-func IsValidLayerType(layer gopacket.LayerType) bool {
-	switch layer {
-	case layers.LayerTypeIPv4,
-		layers.LayerTypeIPv6:
+func IsValidLayerType(layer gopacket.Layer) bool {
+	switch layer.(type) {
+	case *layers.IPv4, *layers.IPv6:
 		return true
 	default:
 		return false

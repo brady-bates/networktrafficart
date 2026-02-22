@@ -3,37 +3,41 @@ package simulation
 import (
 	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/paulmach/orb"
 	"math"
 	"networktrafficart/internal/capture"
+	"networktrafficart/internal/geo"
 	"networktrafficart/internal/util"
+	"slices"
 	"sync"
 	"time"
 )
 
 type Simulation struct {
-	Events            chan capture.PacketData
-	Packets           []Packet
+	CaptureData       chan capture.PacketData
+	Locations         []*Location
 	mut               sync.RWMutex
 	OffScreenDistance float32
-	packetBuffer      chan Packet
+	locationBuffer    chan Location
+	GeoService        geo.GeoService
+	MapBounds         orb.Bound
 }
 
-func NewSimulation(e chan capture.PacketData) *Simulation {
+func NewSimulation(cd chan capture.PacketData, bounds orb.Bound, geo geo.GeoService) *Simulation {
 	return &Simulation{
-		Events:            e,
-		Packets:           []Packet{},
+		CaptureData:       cd,
+		Locations:         []*Location{},
 		mut:               sync.RWMutex{},
 		OffScreenDistance: 25,
-		packetBuffer:      make(chan Packet, 50000),
+		locationBuffer:    make(chan Location, 50000),
+		GeoService:        geo,
+		MapBounds:         bounds,
 	}
 }
 
-func (s *Simulation) Init(screenWidth, screenHeight, PacketBufferConsumerMaxDelayMicros int, PacketBufferConsumerAggressionCurve float64) {
-	go s.WatchEventChannel(
-		screenWidth,
-		screenHeight,
-	)
-	go s.CreatePacketsFromBuffer(
+func (s *Simulation) Init(PacketBufferConsumerMaxDelayMicros int, PacketBufferConsumerAggressionCurve float64) {
+	go s.WatchEventChannel()
+	go s.CreateLocationsFromBuffer(
 		PacketBufferConsumerAggressionCurve,
 		PacketBufferConsumerMaxDelayMicros,
 	)
@@ -42,83 +46,82 @@ func (s *Simulation) Init(screenWidth, screenHeight, PacketBufferConsumerMaxDela
 func (s *Simulation) Tick() {
 	s.mut.Lock()
 	defer s.mut.Unlock()
-	s.tickPackets()
+	s.tickLocations()
 }
 
-func (s *Simulation) tickPackets() {
-	var n int
-	for _, p := range s.Packets {
-		p.Y -= p.YDelta
-		p.X += p.XSkew
-
-		if p.Y >= -s.OffScreenDistance {
-			s.Packets[n] = p
-			n++
-		} else {
-			s.Packets[n] = Packet{}
-		}
-	}
-
-	clear(s.Packets[n:])
-	s.Packets = s.Packets[:n]
+func (s *Simulation) tickLocations() {
+	fmt.Println(len(s.Locations))
+	s.Locations = slices.DeleteFunc(s.Locations, func(loc *Location) bool {
+		loc.Lifespan -= 1
+		return loc.Lifespan <= 0
+	})
 }
 
-func (s *Simulation) DrawPackets(screen *ebiten.Image, circle *ebiten.Image) {
+func (s *Simulation) DrawLocations(screen *ebiten.Image, circle *ebiten.Image) {
 	s.mut.RLock()
 	defer s.mut.RUnlock()
 	opts := &ebiten.DrawImageOptions{}
-	for _, p := range s.Packets {
+	for _, p := range s.Locations {
 		opts.GeoM.Reset()
-		opts.ColorScale.Reset()
-
-		scale := float64(p.Size / 50)
-
-		opts.GeoM.Scale(scale, scale)
 		opts.GeoM.Translate(float64(p.X), float64(p.Y))
-		opts.ColorScale.ScaleWithColor(p.Color)
-
 		screen.DrawImage(circle, opts)
 	}
 }
 
-func (s *Simulation) AddToPackets(p Packet) {
+func (s *Simulation) AddToLocations(l *Location) {
 	s.mut.Lock()
 	defer s.mut.Unlock()
-	s.Packets = append(s.Packets, p)
+	s.Locations = append(s.Locations, l)
 }
 
-func (s *Simulation) WatchEventChannel(screenWidth, screenHeight int) {
-	var event capture.PacketData
+func (s *Simulation) WatchEventChannel() {
+	var data capture.PacketData
 	for {
 		select {
-		case event = <-s.Events:
+		case data = <-s.CaptureData:
 		}
 
-		select {
-		case s.packetBuffer <- NewPacketFromEvent(event, screenWidth, screenHeight):
-		default:
-			fmt.Println("Packet buffer is full")
+		locs := []Location{
+			NewLocation(data.SrcIP, s.GeoService, s.MapBounds),
+			NewLocation(data.DstIP, s.GeoService, s.MapBounds),
+		}
+
+		for _, loc := range locs {
+			if s.containsLocation(loc) {
+				continue
+			}
+			select {
+			case s.locationBuffer <- loc:
+			default:
+				fmt.Println("Location buffer is full")
+			}
 		}
 	}
 }
 
-func (s *Simulation) CreatePacketsFromBuffer(aggressionCurve float64, maxWatcherDelay int) {
+func (s *Simulation) containsLocation(target Location) bool {
+	return slices.ContainsFunc(s.Locations, func(l *Location) bool {
+		return l.X == target.X && l.Y == target.Y
+	})
+}
+
+func (s *Simulation) CreateLocationsFromBuffer(aggressionCurve float64, maxWatcherDelay int) {
 	curve := util.ClampValue(aggressionCurve, 0.0, math.Inf(+1))
-	capacity := float64(cap(s.packetBuffer))
+	capacity := float64(cap(s.locationBuffer))
 	minDelay := 0.0
 	maxDelay := float64(maxWatcherDelay)
 
-	var packet Packet
+	var location Location
 	for {
 		select {
-		case packet = <-s.packetBuffer:
-			count := float64(len(s.packetBuffer))
+		case location = <-s.locationBuffer:
+			count := float64(len(s.locationBuffer))
 			fullness := count / (capacity * .6)
 			modulationFactor := math.Pow(fullness, curve)
 			modulatedDelay := maxDelay + modulationFactor*(minDelay-maxDelay)
 			micro := time.Duration(modulatedDelay) * time.Microsecond
 
-			s.AddToPackets(packet)
+			s.AddToLocations(&location)
 
 			time.Sleep(micro)
 		}

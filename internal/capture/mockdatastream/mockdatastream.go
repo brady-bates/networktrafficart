@@ -11,7 +11,7 @@ func Start(events chan capture.PacketData, delayMicros int, batchSize int) {
 	for {
 		for range batchSize {
 			select {
-			case events <- capture.NewPacketData(500, util.GenerateRandomIPv4(), util.GenerateRandomIPv4()):
+			case events <- capture.NewPacketData(util.GenerateRandomIPv4(), util.GenerateRandomIPv4()):
 			default:
 			}
 		}
