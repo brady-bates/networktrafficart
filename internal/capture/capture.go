@@ -33,10 +33,6 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet) {
 			}
 		}
 
-		if packet.NetworkLayer() == nil {
-			continue
-		}
-
 		if IsValidLayerType(packet.NetworkLayer()) {
 			select {
 			case c.Data <- NewDataFromPacket(packet, c.localSubnet):
@@ -44,7 +40,13 @@ func (c *Capture) StartPacketCapture(packetIn chan<- gopacket.Packet) {
 				log.Println("Dropped packet (channel full)")
 			}
 		} else {
-			log.Fatalf("Dropped packet (invalid network layer type %s)\n", packet.NetworkLayer().LayerType())
+			var layerType string
+			if packet.NetworkLayer() == nil {
+				layerType = "nil"
+			} else {
+				layerType = packet.NetworkLayer().LayerType().String()
+			}
+			log.Printf("Dropped packet (invalid network layer type %s)\n", layerType)
 		}
 	}
 }

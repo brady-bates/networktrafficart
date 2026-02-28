@@ -45,6 +45,10 @@ func NewDataFromPacket(packet gopacket.Packet, subnet *net.IPNet) PacketData {
 }
 
 func IsValidLayerType(layer gopacket.Layer) bool {
+	if layer == nil {
+		return false
+	}
+
 	switch layer.(type) {
 	case *layers.IPv4, *layers.IPv6:
 		return true
